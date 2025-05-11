@@ -4,7 +4,7 @@ import Navbar from "./Navbar";
 import JobSlider from "./JobSlider";
 import Footer from "./Footer";
 import { TypeAnimation } from "react-type-animation";
-import "./Home.css";
+
 import Image from "next/image";
 
 export default function Home() {
