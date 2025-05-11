@@ -1,5 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { toast } from "react-hot-toast";
@@ -72,7 +73,7 @@ const EmployeeNavbar = () => {
     return (
       <nav className="dashboard-navbar navbar navbar-expand-lg">
         <div className="container-fluid">
-          <a className="navbar-brand" href="/">Dashboard</a>
+          <Link className="navbar-brand" href="/">Dashboard</Link>
         </div>
       </nav>
     );
@@ -81,9 +82,9 @@ const EmployeeNavbar = () => {
   return (
     <nav className="dashboard-navbar navbar navbar-expand-lg">
       <div className="container-fluid">
-        <a className="navbar-brand" href="/employee-dashboard">
+        <Link className="navbar-brand" href="/employee-dashboard">
           Dashboard
-        </a>
+        </Link>
         <button
           className="navbar-toggler"
           type="button"
@@ -98,25 +99,25 @@ const EmployeeNavbar = () => {
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav">
             <li className="nav-item">
-              <a
+              <Link
                 className="nav-link"
                 href="/employee-profile"
               >
                 My Profile
-              </a>
+              </Link>
             </li>
             <li className="nav-item">
-              <a
+              <Link
                 className="nav-link"
                 href="/employee-apply"
               >
                 Apply for Jobs
-              </a>
+              </Link>
             </li>
             <li className="nav-item">
-              <a className="nav-link" href="/view-rate">
+              <Link className="nav-link" href="/view-rate">
                 Your Ratings
-              </a>
+              </Link>
             </li>
             <li className="nav-item">
               <a className="nav-link" href="#" onClick={handleLogout}>

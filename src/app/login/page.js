@@ -3,6 +3,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { signIn, useSession } from "next-auth/react";
+import Link from "next/link";
 import "./page.css";
 
 export default function Login() {
@@ -107,7 +108,7 @@ export default function Login() {
                 </button>
               </div>
             </form>
-            <p className="sign-up">Don't have an account? <a href="/register">Sign up now</a></p>
+            <p className="sign-up">Don&apos;t have an account? <Link href="/register">Sign up now</Link></p>
             {/* Status indicator for debugging */}
             <div className="auth-status">
               <p>Auth Status: {status}</p>
