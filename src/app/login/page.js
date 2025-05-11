@@ -1,10 +1,13 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import { signIn, useSession } from "next-auth/react";
+import Link from "next/link";
 import "./page.css";
 
 export default function Login() {
+  const { data: session, status } = useSession();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -13,6 +16,12 @@ export default function Login() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
   const { email, password } = formData;
+
+  // Redirect if already logged in
+  if (status === "authenticated") {
+    router.push("/dashboard");
+    return null;
+  }
 
   const handleOnChange = (e) => {
     setFormData((prevData) => ({
@@ -24,56 +33,35 @@ export default function Login() {
   const handleOnSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    toast.loading("Loading...");
+    const toastId = toast.loading("Signing in...");
   
     try {
-      const response = await fetch("/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
+      // Using NextAuth's signIn function
+      const result = await signIn("credentials", {
+        email: formData.email,
+        password: formData.password,
+        redirect: false
       });
   
-      if (response.ok) {
-        const data = await response.json();
-        toast.dismiss();
-        toast.success(data.message);
-  
-        // Store JWT token in localStorage (or use cookies for better security)
-        localStorage.setItem("authToken", data.token);
-        localStorage.setItem("uniqueId", data.userID);
-  
-        const dashboardUrl =
-          data.role === "shopkeeper"
-            ? `/shopkeeper-dashboard?userID=${data.userID}`
-            : `/employee-dashboard?userID=${data.userID}`;
-        router.push(dashboardUrl);
+      if (result.ok) {
+        toast.dismiss(toastId);
+        toast.success("Login successful!");
+        
+        // Let the dashboard handle redirection based on role
+        router.push("/dashboard");
       } else {
-        const errorData = await response.json();
-        toast.dismiss();
-        toast.error(errorData.message);
+        toast.dismiss(toastId);
+        toast.error(result.error || "Failed to login");
       }
     } catch (error) {
-      toast.dismiss();
+      toast.dismiss(toastId);
       toast.error("Failed to login");
+      console.error("Login error:", error);
     } finally {
       setIsLoading(false);
     }
   };
   
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > window.innerHeight / 3 && !isModalOpen) {
-        setIsModalOpen(true);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [isModalOpen]);
-
   const closeModal = () => setIsModalOpen(false);
 
   return (
@@ -120,10 +108,14 @@ export default function Login() {
                 </button>
               </div>
             </form>
-            <p className="sign-up">Dont have an account? <a href="/register">Sign up now</a></p>
+            <p className="sign-up">Don&apos;t have an account? <Link href="/register">Sign up now</Link></p>
+            {/* Status indicator for debugging */}
+            <div className="auth-status">
+              <p>Auth Status: {status}</p>
+            </div>
           </div>
           <div className="modal-right">
-            <img src="https://images.unsplash.com/photo-1512486130939-2c4f79935e4f?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=dfd2ec5a01006fd8c4d7592a381d3776&auto=format&fit=crop&w=1000&q=80" alt="" />
+            <img src="/api/placeholder/400/300" alt="Login" />
           </div>
           <button className="icon-button close-button" onClick={closeModal}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50">

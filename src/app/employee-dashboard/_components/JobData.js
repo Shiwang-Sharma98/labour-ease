@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import Card from './Card';
+import Card from '../_components/Card';
 import './JobData.css';
 import toast from 'react-hot-toast';
-import EmployeeNavbar from '@/app/employee-navbar/EmployeeNavbar';
+import EmployeeNavbar from '@/app/employee-dashboard/_components/EmployeeNavbar';
 
 const JobData = () => {
   const [jobs, setJobs] = useState([]);

@@ -17,7 +17,7 @@ export default function ExamplePage() {
             <p className="text-muted-foreground mb-4">
               This is an example of how to use your new styling system.
             </p>
-            <button className="bg-primary py-2 px-4 rounded-md  text-red-500">
+            <button className="bg-primary py-2 px-4 rounded-md">
               Get Started
             </button>
           </div>

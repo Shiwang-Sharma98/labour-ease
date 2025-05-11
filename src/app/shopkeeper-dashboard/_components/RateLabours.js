@@ -1,27 +1,67 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { toast } from "react-hot-toast";
 import "./rateLabours.css"; // Add your custom styles here
 
 const RateLabours = () => {
-  const searchParams = useSearchParams();
-  const userID = searchParams.get("userID");
+  const router = useRouter();
+  const { data: session, status } = useSession();
 
   const [labours, setLabours] = useState([]); // State to hold labours list
-  const [loading, setLoading] = useState(false); // Loading state
+  const [loading, setLoading] = useState(true); // Loading state
   const [rating, setRating] = useState({}); // Rating state per labour
   const [review, setReview] = useState({}); // Review state per labour
+  const [shopkeeperId, setShopkeeperId] = useState(null);
+  const [authError, setAuthError] = useState(null);
 
-  // Fetch labours working for the shopkeeper
+  // Authentication and data fetching
   useEffect(() => {
-    if (userID) {
-      fetchLaboursForShopkeeper(userID);
-    }
-  }, [userID]);
+    const verifyAuth = async () => {
+      // If still loading session, wait
+      if (status === 'loading') return;
+
+      // If not authenticated, redirect to login
+      if (status === 'unauthenticated') {
+        toast.error("Session expired. Please log in again.");
+        router.push('/login');
+        return;
+      }
+
+      // Verify user role via API
+      try {
+        const response = await fetch('/api/user');
+        const userData = await response.json();
+        
+        // Check if user is a shopkeeper
+        if (userData.role !== 'shopkeeper') {
+          setAuthError("Access denied. Only shopkeepers can access this page.");
+          toast.error("Access denied. Only shopkeepers can access this page.");
+          setTimeout(() => router.push('/dashboard'), 2000);
+          return;
+        }
+        
+        // Use ID from session/API instead of URL parameter for security
+        const verifiedUserId = userData.id;
+        setShopkeeperId(verifiedUserId);
+        
+        // Fetch labours for the authenticated shopkeeper
+        fetchLaboursForShopkeeper(verifiedUserId);
+      } catch (error) {
+        console.error("Authentication verification error:", error);
+        setAuthError("Failed to verify authentication. Please try again.");
+        toast.error("Authentication error. Please log in again.");
+        setTimeout(() => router.push('/login'), 2000);
+      }
+    };
+    
+    verifyAuth();
+  }, [status, router]);
 
   const fetchLaboursForShopkeeper = async (shopkeeperId) => {
-    setLoading(true);
+    if (!shopkeeperId) return;
+    
     const toastId = toast.loading("Fetching labours...");
 
     try {
@@ -44,6 +84,7 @@ const RateLabours = () => {
         toast.error(`Failed to fetch labours: ${data.message}`);
       }
     } catch (error) {
+      console.error("Error fetching labours:", error);
       toast.error("An error occurred while fetching labours.");
     } finally {
       setLoading(false);
@@ -69,6 +110,11 @@ const RateLabours = () => {
 
   // Submit rating and review for a labour
   const handleSubmitReview = async (labourId) => {
+    if (!shopkeeperId) {
+      toast.error("Authentication error. Please log in again.");
+      return;
+    }
+
     const reviewText = review[labourId];
     const ratingValue = rating[labourId];
 
@@ -85,7 +131,7 @@ const RateLabours = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          shopkeeper_id: userID,
+          shopkeeper_id: shopkeeperId,
           labour_id: labourId,
           rating: ratingValue,
           review: reviewText,
@@ -103,11 +149,23 @@ const RateLabours = () => {
         toast.error(`Failed to submit review: ${data.message}`);
       }
     } catch (error) {
+      console.error("Error submitting review:", error);
       toast.error("An error occurred while submitting the review.");
     } finally {
       toast.dismiss(toastId);
     }
   };
+
+  // If there's an authentication error, show the error message
+  if (authError) {
+    return (
+      <div className="container mt-4">
+        <div className="alert alert-danger" role="alert">
+          {authError}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mt-4">

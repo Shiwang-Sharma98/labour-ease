@@ -1,76 +1,114 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { useSession } from 'next-auth/react';
+import { toast } from 'react-hot-toast';
 import "./employeeDashboard.css";
-import EmployeeNavbar from "@/app/employee-navbar/EmployeeNavbar";
+import EmployeeNavbar from "@/app/employee-dashboard/_components/EmployeeNavbar";
 
 const EmpDashboardPage = () => {
+  const { data: session, status } = useSession();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const userID = searchParams.get("userID");
+  
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [shopkeepers, setShopkeepers] = useState([]);
   const [reviews, setReviews] = useState([]);
+  const [userId, setUserId] = useState(null);
+  const [authError, setAuthError] = useState(null);
 
-  // Verify token on component mount
+  // Check authentication and role
   useEffect(() => {
-    const verifyToken = async () => {
-      const token = localStorage.getItem("authToken");
+    const verifyAuth = async () => {
+      // If still loading session, wait
+      if (status === 'loading') return;
 
-      if (!token) {
-        router.push("/login");
+      // If not authenticated, redirect to login
+      if (status === 'unauthenticated') {
+        toast.error("Session expired. Please log in again.");
+        router.push('/login');
         return;
       }
 
+      // Verify user role via API
       try {
-        const response = await fetch("/api/verifyToken", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ token }),
-        });
-
-        if (!response.ok) {
-          router.push("/login");
+        const response = await fetch('/api/user');
+        const userData = await response.json();
+        
+        // Check if user is a labour/employee
+        if (userData.role !== 'labour') {
+          setAuthError("Access denied. Only labours can access this page.");
+          toast.error("Access denied. Only labours can access this page.");
+          setTimeout(() => router.push('/dashboard'), 2000);
+          return;
         }
+        
+        // Use ID from session/API instead of URL parameter for security
+        const verifiedUserId = userData.id;
+        setUserId(verifiedUserId);
+        
+        // Load data using verified ID
+        fetchEmployeeData(verifiedUserId);
+        fetchShopkeepers();
       } catch (error) {
-        console.error("Token verification failed:", error);
-        router.push("/login");
+        console.error("Authentication verification error:", error);
+        setAuthError("Failed to verify authentication. Please try again.");
+        toast.error("Authentication error. Please log in again.");
+        setTimeout(() => router.push('/login'), 2000);
       }
     };
-
-    verifyToken();
-  }, [router]);
+    
+    verifyAuth();
+  }, [status, router]);
 
   // Fetch employee data
-  useEffect(() => {
-    const fetchEmployeeData = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch(`/api/updateLabour?id=${userID}`);
-        if (response.ok) {
-          const data = await response.json();
-          setProfile(data);
-        } else {
-          console.error("Failed to fetch employee data");
-        }
-      } catch (error) {
-        console.error("Error fetching employee data:", error);
-      } finally {
-        setLoading(false);
+  const fetchEmployeeData = async (id) => {
+    setLoading(true);
+    const toastId = toast.loading('Fetching profile data...');
+    
+    try {
+      const response = await fetch(`/api/updateLabour?id=${id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setProfile(data);
+      } else {
+        const errorData = await response.json();
+        toast.error(`Failed to fetch profile data. Error: ${errorData.message || 'Unknown error'}`);
       }
-    };
-
-    if (userID) {
-      fetchEmployeeData();
-    } else {
-      console.error("No userID provided");
+    } catch (error) {
+      console.error("Error fetching employee data:", error);
+      toast.error('An error occurred while fetching profile data. Please try again later.');
+    } finally {
+      setLoading(false);
+      toast.dismiss(toastId);
     }
-  }, [userID]);
+  };
 
-    const handleReviewChange = (shopkeeperId, field, value) => {
+  // Fetch shopkeepers for reviews
+  const fetchShopkeepers = async () => {
+    try {
+      const response = await fetch('/api/listShopkeepers');
+      if (response.ok) {
+        const data = await response.json();
+        setShopkeepers(data.shopkeepers || []);
+        
+        // Initialize reviews state with shopkeeper IDs
+        const initialReviews = (data.shopkeepers || []).map(shopkeeper => ({
+          id: shopkeeper.id,
+          rating: 0,
+          review: ''
+        }));
+        setReviews(initialReviews);
+      } else {
+        console.error("Failed to fetch shopkeepers");
+      }
+    } catch (error) {
+      console.error("Error fetching shopkeepers:", error);
+    }
+  };
+
+  const handleReviewChange = (shopkeeperId, field, value) => {
     setReviews((prevReviews) =>
       prevReviews.map((review) =>
         review.id === shopkeeperId ? { ...review, [field]: value } : review
@@ -82,29 +120,68 @@ const EmpDashboardPage = () => {
     const currentReview = reviews.find((review) => review.id === shopkeeperId);
     if (!currentReview) return;
 
+    // Validate rating
+    if (currentReview.rating < 1 || currentReview.rating > 5) {
+      toast.error("Please provide a rating between 1 and 5");
+      return;
+    }
+
+    // Validate review text
+    if (!currentReview.review.trim()) {
+      toast.error("Please provide a review comment");
+      return;
+    }
+
+    const toastId = toast.loading('Submitting review...');
     try {
       const response = await fetch("/api/submitReview", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           shopkeeperId,
-          labourId: userID,
+          labourId: userId,
           rating: currentReview.rating,
           review: currentReview.review,
         }),
       });
 
       if (response.ok) {
-        alert("Review submitted successfully!");
+        toast.success("Review submitted successfully!");
         handleReviewChange(shopkeeperId, "rating", 0);
         handleReviewChange(shopkeeperId, "review", "");
       } else {
-        console.error("Failed to submit review");
+        const errorData = await response.json();
+        toast.error(`Failed to submit review: ${errorData.message || 'Unknown error'}`);
       }
     } catch (error) {
       console.error("Error submitting review:", error);
+      toast.error('An error occurred while submitting the review. Please try again later.');
+    } finally {
+      toast.dismiss(toastId);
     }
   };
+
+  // If there's an authentication error, show error message
+  if (authError) {
+    return (
+      <div className="auth-error-container">
+        <div className="auth-error-message">
+          <h2>Authentication Error</h2>
+          <p>{authError}</p>
+          <p>Redirecting...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading state while checking authentication
+  if (status === 'loading') {
+    return (
+      <div className="loading-container">
+        <p>Verifying your session...</p>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -120,9 +197,14 @@ const EmpDashboardPage = () => {
 
   return (
     <>
-    
-    <EmployeeNavbar/>
+      <EmployeeNavbar />
       <div className="dashboard-container">
+        {/* Session status indicator (for testing) */}
+        <div className="session-status mb-3 p-2 rounded bg-light">
+          <small>Session active: {status === 'authenticated' ? 'Yes' : 'No'}</small>
+          <small className="ms-3">Session expires in: {session?.expires ? new Date(session.expires).toLocaleTimeString() : 'N/A'}</small>
+        </div>
+
         <h1 className="dashboard-welcome">Welcome {profile.name}</h1>
         <div className="dashboard-shopkeepers">
           <h2>Rate and Review Shopkeepers</h2>

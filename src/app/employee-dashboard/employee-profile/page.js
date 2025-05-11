@@ -1,11 +1,10 @@
 import { Suspense } from "react";
-import ShopkeeperProfilePage from "./_components/shopkeeperProfile";
-
+import EmployeeProfile from "../_components/EmployeeProfile";
 
 const ShopkkeeperDashboardPage = () => {
   return (
     <Suspense>
-    <ShopkeeperProfilePage />
+    <EmployeeProfile />
     </Suspense>
    );
 };
