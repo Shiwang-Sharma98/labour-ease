@@ -47,4 +47,88 @@
   --ring: 59 130 246;
 }
 
+/* Slick Carousel Theme Overrides */
+/* Override slider background */
+.slick-list, 
+.slick-track, 
+.slick-slide > div {
+  background-color: transparent !important;
+}
+
+/* Make dots visible in both themes */
+.slick-dots li button:before {
+  color: rgb(var(--foreground)) !important;
+  opacity: 0.35;
+}
+
+.slick-dots li.slick-active button:before {
+  color: rgb(var(--foreground)) !important;
+  opacity: 0.9;
+}
+
+/* Navigation arrows */
+.slick-prev:before, 
+.slick-next:before {
+  color: rgb(var(--foreground)) !important;
+  opacity: 0.75;
+}
+
+.slick-prev:hover:before, 
+.slick-next:hover:before {
+  color: rgb(var(--primary)) !important;
+}
+
+/* Job cards within slider */
+.slick-slide .job-card {
+  background-color: rgb(var(--card)) !important;
+  color: rgb(var(--card-foreground)) !important;
+  border: 1px solid rgba(var(--border), 0.2);
+}
+
+/* Fix for dark theme text visibility */
+.dark .slick-slide h2,
+.dark .slick-slide p {
+  color: rgb(var(--card-foreground)) !important;
+}
+
+/* Fix button colors */
+/* .slick-slide button {
+  color: rgb(var(--primary-foreground)) !important;
+} */
+
+/* Fix modal appearance */
+.fixed.inset-0.bg-black\/50 > div {
+  background-color: rgb(var(--card)) !important;
+  color: rgb(var(--card-foreground)) !important;
+}
+
+/* Optional: Add transitions for smoother theme switching */
+.slick-slider,
+.slick-list,
+.slick-track,
+.slick-slide,
+.slick-slide > div,
+button,
+.fixed.inset-0.bg-black\/50 > div {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
+}
+/* Fix for "Read More" button in light theme */
+.slick-slide .border-2.border-white {
+  border-color: rgb(var(--foreground)) !important;
+  color: rgb(var(--foreground)) !important;
+}
+
+.dark .slick-slide .border-2.border-white {
+  border-color: rgb(var(--card-foreground)) !important;
+  color: rgb(var(--card-foreground)) !important;
+}
+
+/* Hover states for the Read More button */
+.slick-slide .border-2.border-white:hover {
+  background-color: rgba(var(--foreground), 0.1) !important;
+}
+
+.dark .slick-slide .border-2.border-white:hover {
+  background-color: rgba(var(--card-foreground), 0.1) !important;
+}
 /* Import any other global styles or component styles below this line */
