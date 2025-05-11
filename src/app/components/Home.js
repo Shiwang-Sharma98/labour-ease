@@ -1,126 +1,88 @@
-'use client'
+"use client"
 import React from "react";
 import Navbar from "./Navbar";
 import JobSlider from "./JobSlider";
 import Footer from "./Footer";
 import { TypeAnimation } from "react-type-animation";
-
 import Image from "next/image";
 
 export default function Home() {
   return (
     <>
       <Navbar />
-      <div className="container text-center py-5">
-        {/* Header Section */}
-        <div className="d-flex justify-content-between align-items-center">
-          <div className="text-container">
-            <h1>Find a job that suits</h1>
-            <h1>your interests and skills</h1>
-            <TypeAnimation
-                sequence={[
-                  "Lorem ipsum dolor sit amet consectetur adipisicing elit.\n", // First line with newline
-                  1000, // Pause after first line
-                  "Lorem ipsum dolor sit amet consectetur adipisicing elit.\nDolorem voluptate repellat modi quidem aliquid eaque ducimus ipsa et,\n", // First and second line with newlines
-                  1000, // Pause after second line
-                  "Lorem ipsum dolor sit amet consectetur adipisicing elit.\nDolorem voluptate repellat modi quidem aliquid eaque ducimus ipsa et,\nFacere mollitia!", // All three lines
-                  2000, // Pause with all lines visible
-                  "", // Clear all lines
-                  1000, // Pause when empty
-                ]}
-                speed={50}
-                cursor={true}
-                repeat={Infinity}
-                style={{
-                  fontSize: "1rem",
-                  color: "#555",
-                  display: "block",
-                  marginTop: "10px",
-                  minHeight: "4.5em", // Reserve space for 3 lines plus some padding
-                  whiteSpace: "pre-line", // Preserve newlines while wrapping text
-                  textAlign: "left", // Align text to the left for better readability
-                  lineHeight: "1.5", // Add some spacing between lines
-                }}
-              />
-          </div>
-          <div className="image-container">
-            <div
-              className="image-wrapper"
-              onMouseMove={(e) => {
-                const rect = e.currentTarget.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                
-                // Calculate rotation based on mouse position
-                const xRotation = (y - rect.height / 2) / 15;
-                const yRotation = (x - rect.width / 2) / -15;
-                
-                e.currentTarget.style.transform = `
-                  rotateX(${xRotation}deg)
-                  rotateY(${yRotation}deg)
-                  scale3d(1.02, 1.02, 1.02)
-                `;
 
-                // Update spotlight position
-                const spotlightX = (x / rect.width) * 100;
-                const spotlightY = (y / rect.height) * 100;
-                
-                const gradientIntensity = Math.max(0, 1 - (x / rect.width)); // Stronger on left side
-                e.currentTarget.style.background = `
-                  radial-gradient(
-                    circle at ${spotlightX}% ${spotlightY}%, 
-                    rgba(37,89,222,${0.2 * gradientIntensity}) 0%,
-                    transparent 60%
-                  ),
-                  radial-gradient(
-                    circle 710px at 5.2% 7.2%,
-                    rgba(37,89,222,${0.3 * gradientIntensity}) 0%,
-                    rgba(37,89,222,${0.2 * gradientIntensity}) 7.5%,
-                    rgba(4,4,29,${0.1 * gradientIntensity}) 44.7%,
-                    transparent 80%
-                  )
-                `;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "rotateX(0) rotateY(0) scale3d(1, 1, 1)";
-                e.currentTarget.style.background = `
-                  radial-gradient(
-                    circle 710px at 5.2% 7.2%,
-                    rgba(37,89,222,0.3) 0%,
-                    rgba(37,89,222,0.2) 7.5%,
-                    rgba(4,4,29,0.1) 44.7%,
-                    transparent 80%
-                  )
-                `;
-              }}
+      {/* Hero Section */}
+      <div
+        className="relative flex flex-col items-center justify-center
+                   h-screen bg-gray-900 bg-[url('/images/hero-bg.jpg')]
+                   bg-cover bg-center text-center px-4"
+      >
+        {/* Optional overlay */}
+        <div className="absolute inset-0 bg-black/50"></div>
+
+        <div className="relative z-10 max-w-2xl space-y-6">
+          <h1 className="text-white text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight">
+            Find a job that suits<br />your interests and skills
+          </h1>
+
+          <TypeAnimation
+            sequence={[
+              "Lorem ipsum dolor sit amet consectetur adipisicing elit.\n", 
+              1000,
+              "Lorem ipsum dolor sit amet consectetur adipisicing elit.\nDolorem voluptate repellat modi quidem aliquid eaque ducimus ipsa et,\n",
+              1000,
+              "Lorem ipsum dolor sit amet consectetur adipisicing elit.\nDolorem voluptate repellat modi quidem aliquid eaque ducimus ipsa et,\nFacere mollitia!",
+              2000,
+              "",
+              1000,
+            ]}
+            speed={50}
+            cursor={true}
+            repeat={Infinity}
+            style={{
+              whiteSpace: "pre-line",
+              lineHeight: "1.5rem",
+              minHeight: "4.5em",
+            }}
+            className="text-gray-300 text-base sm:text-lg"
+          />
+
+          <div className="flex flex-wrap justify-center gap-4 pt-4">
+            <a
+              href="#"
+              className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700
+                         text-white font-medium rounded-md shadow-lg transition"
             >
-              <Image
-                width={400}
-                height={400}
-                src="/images/heroS.jpg"
-                alt="hero"
-                className="img-fluid"
-                style={{ maxHeight: "400px", maxWidth: "100%" }}
-              />
-            </div>
-</div>
-        </div>
-
-
-        {/* Job Slider Section */}
-        <div className="row job-slider-section">
-            <div className="col">
-              <JobSlider />
-            </div>
+              Open App
+            </a>
+            <a
+              href="#"
+              className="px-6 py-3 border border-white hover:bg-white/10
+                         text-white font-medium rounded-md shadow-lg transition"
+            >
+              Discover More
+            </a>
           </div>
+           <div className="mt-12 flex justify-center space-x-6">
+   <div className="w-px h-20 bg-white/20"></div>
+   <div className="w-px h-28 bg-white/30"></div>
+   <div className="w-px h-20 bg-white/20"></div>
+ </div>
+          
+        </div>
+      </div>
 
+      {/* Rest of the page */}
+      <div className="container mx-auto px-4 py-12">
+        {/* Job Slider Section */}
+        <section className="mb-12">
+          <JobSlider />
+        </section>
 
-        {/* Popular Job Categories Section */}
-        <div className="row mb-4 popular">
-          <h2 className="text-center fw-bold text-uppercase mb-3">
-            Popular Job Categories
-          </h2>
-          <div className="col-12 d-flex flex-wrap justify-content-center gap-3">
+        {/* Popular Job Categories */}
+        <section className="mb-12 text-center">
+          <h2 className="text-2xl font-bold uppercase mb-6">Popular Job Categories</h2>
+          <div className="flex flex-wrap justify-center gap-3">
             {[
               "Cashier",
               "Cleaning Staff",
@@ -130,89 +92,59 @@ export default function Home() {
               "Customer Service",
               "Caretaker",
               "Housekeeper",
-            ].map((category, index) => (
+            ].map((cat, i) => (
               <a
-                key={index}
+                key={i}
                 href="#"
-                className="btn btn-outline-primary shadow-sm"
-                style={{
-                  borderRadius: "20px",
-                  padding: "10px 20px",
-                }}
+                className="px-4 py-2 border border-indigo-600 rounded-full
+                           hover:bg-indigo-50 transition"
               >
-                {category}
+                {cat}
               </a>
             ))}
           </div>
-        </div>
+        </section>
 
         {/* Reviews Section */}
-        <div className="row">
-          <div className="col">
-            <nav
-              id="navbar-example2"
-              className="navbar px-3 mb-3 shadow-sm rounded"
-            >
-              <a className="navbar-brand" href="#">
-                Reviews
-              </a>
-              <ul className="nav nav-pills">
-                <li className="nav-item">
-                  <a className="nav-link active" href="#page1">
-                    Page 1
-                  </a>
-                </li>
-                <li className="nav-item">
-                  <a className="nav-link" href="#page2">
-                    Page 2
-                  </a>
-                </li>
-                <li className="nav-item dropdown">
-                  <a
-                    className="nav-link dropdown-toggle"
-                    data-bs-toggle="dropdown"
-                    href="#"
-                    role="button"
-                    aria-expanded="false"
-                  >
+        <section className="mb-12">
+          <div className="max-w-3xl mx-auto">
+            <div className="sticky top-0 bg-white/80 backdrop-blur-md px-4 py-3 rounded-md shadow-sm mb-4 z-10">
+              <nav className="flex space-x-4">
+                <a href="#page1" className="font-medium">Page 1</a>
+                <a href="#page2" className="font-medium">Page 2</a>
+                <div className="relative group">
+                  <button className="font-medium inline-flex items-center">
                     More Pages
-                  </a>
-                  <ul className="dropdown-menu">
-                    <li>
-                        <a className="dropdown-item" href="#page3">
-                            Page 3
-                        </a>
-                    </li>
-                    <li>
-                        <a className="dropdown-item" href="#page4">
-                            Page 4
-                        </a>
-                    </li>
-                </ul>
-                </li>
-              </ul>
-            </nav>
+                    <svg className="ml-1 w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M5 8l5 5 5-5H5z" />
+                    </svg>
+                  </button>
+                  <ul className="absolute left-0 mt-2 w-40 bg-white rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                    <li><a href="#page3" className="block px-4 py-2 hover:bg-gray-100">Page 3</a></li>
+                    <li><a href="#page4" className="block px-4 py-2 hover:bg-gray-100">Page 4</a></li>
+                  </ul>
+                </div>
+              </nav>
+            </div>
 
             <div
+              id="scrollspy"
+              className="space-y-8 overflow-y-auto h-72 pr-2"
               data-bs-spy="scroll"
-              data-bs-target="#navbar-example2"
-              data-bs-smooth-scroll="true"
-              className="scrollspy-example p-3 rounded shadow-sm"
-              tabIndex="0"
-              style={{
-                height: 300,
-                overflowY: "auto",
-              }}
+              data-bs-target="#scrollspy"
+              tabIndex={0}
             >
               <div id="page1">
-                <h4>Reviews Page 1</h4>
-                <h5>John Doe</h5>
+                <h4 className="text-xl font-semibold">Reviews Page 1</h4>
+                <h5 className="font-medium">John Doe</h5>
                 <p>Lorem ipsum dolor sit amet...</p>
               </div>
+              {/* ...page2,3,4 */}
             </div>
           </div>
-        </div>
+        </section>
       </div>
+
       <Footer />
     </>
   );
