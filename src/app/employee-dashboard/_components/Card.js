@@ -2,40 +2,58 @@
 import React, { useState, useEffect } from 'react';
 import './Card.css';
 import { toast } from 'react-hot-toast';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 export default function Card({ job }) {
   const [showModal, setShowModal] = useState(false);
-  const [uniqueId, setUniqueId] = useState(null);
-  const [loading, setLoading] = useState(false); // New state for loading
+  const [loading, setLoading] = useState(false);
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
   useEffect(() => {
-    // Retrieve uniqueId from localStorage when the component mounts
-    const storedUniqueId = localStorage.getItem('uniqueId');
-    console.log(job);
-    console.log(storedUniqueId);
-    if (storedUniqueId) {
-      setUniqueId(storedUniqueId);
+    // Authentication check when component mounts
+    if (status === 'unauthenticated') {
+      toast.error('Please log in to apply for jobs');
     }
-  }, []);
+  }, [status]);
 
   const handleApply = async () => {
-    if (!uniqueId) {
-      toast.error('User ID not found. Please log in.');
+    // Check authentication status
+    if (status === 'loading') {
+      toast.loading('Checking authentication...');
       return;
     }
 
-    setLoading(true); // Set loading to true when the request starts
-    const toastId = toast.loading('Loading...'); // Show loading toast
+    if (status === 'unauthenticated') {
+      toast.error('Please log in to apply for jobs');
+      router.push('/login');
+      return;
+    }
+
+    setLoading(true);
+    const toastId = toast.loading('Applying for job...');
 
     try {
+      // Get user data from API for additional verification
+      const userResponse = await fetch('/api/user');
+      const userData = await userResponse.json();
+      
+      if (!userData.id) {
+        toast.error('Unable to verify user credentials');
+        toast.dismiss(toastId);
+        setLoading(false);
+        return;
+      }
+
       const response = await fetch('/api/applyJob', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          jobId: job.job_id, // Ensure job.id exists and is valid
-          labourId: uniqueId, // Ensure uniqueId exists and is valid
+          jobId: job.job_id,
+          labourId: userData.id, // Use verified ID from session
         }),
       });
 
@@ -43,12 +61,11 @@ export default function Card({ job }) {
         toast.success('Job Applied Successfully!');
         setShowModal(false);
       } else {
-        const errorData = await response.json(); // Get error details from the response
+        const errorData = await response.json();
         console.error('Failed to apply for the job:', errorData);
 
-        // Display a specific error message based on the backend response
         if (response.status === 409) {
-          toast.error('You have already applied for this job.'); // Show a specific error message
+          toast.error('You have already applied for this job.');
         } else {
           toast.error(`Failed to apply for the job. Error: ${errorData.message || 'Unknown error'}`);
         }
@@ -57,10 +74,11 @@ export default function Card({ job }) {
       console.error('Error applying for job:', error);
       toast.error('An error occurred. Please try again later.');
     } finally {
-      setLoading(false); // Set loading to false when the request finishes
-      toast.dismiss(toastId); // Dismiss loading toast
+      setLoading(false);
+      toast.dismiss(toastId);
     }
   };
+
   const truncateText = (text, wordLimit) => {
     const words = text.split(' ');
     if (words.length > wordLimit) {
@@ -68,21 +86,22 @@ export default function Card({ job }) {
     }
     return text;
   };
+
   return (
-    <div className=" d-flex align-items-stretch">
-    <div className="card h-100 shadow-sm">
-      <div className="card-body d-flex flex-column">
-        <h5 className="card-title">{job.title}</h5>
-        <p className="card-text text-truncate overflow-hidden" style={{ maxHeight: '4.5em' }}>
-          {truncateText(job.description, 100)}
-        </p>
-        <div className="mt-auto">
-          <button className="btn btn-primary w-100" onClick={() => setShowModal(true)}>
-            View Details
-          </button>
+    <div className="d-flex align-items-stretch">
+      <div className="card h-100 shadow-sm">
+        <div className="card-body d-flex flex-column">
+          <h5 className="card-title">{job.title}</h5>
+          <p className="card-text text-truncate overflow-hidden" style={{ maxHeight: '4.5em' }}>
+            {truncateText(job.description, 100)}
+          </p>
+          <div className="mt-auto">
+            <button className="btn btn-primary w-100" onClick={() => setShowModal(true)}>
+              View Details
+            </button>
+          </div>
         </div>
       </div>
-    </div>
 
       {showModal && (
         <div className="modal-overlay" role="dialog">
@@ -105,9 +124,9 @@ export default function Card({ job }) {
                 type="button"
                 className="btn btn-primary"
                 onClick={handleApply}
-                disabled={loading} // Disable the button when loading
+                disabled={loading || status === 'loading'}
               >
-                {loading ? 'Loading...' : 'Apply for Job'} {/* Show loading indicator */}
+                {loading ? 'Applying...' : 'Apply for Job'}
               </button>
             </div>
           </div>

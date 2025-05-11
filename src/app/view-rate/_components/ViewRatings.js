@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "react-hot-toast";
 import "./viewRatings.css"; // Add your custom styles here
-import EmployeeNavbar from "@/app/employee-navbar/EmployeeNavbar";
+import EmployeeNavbar from "@/app/employee-dashboard/_components/EmployeeNavbar";
 
 const ViewRatings = () => {
   const searchParams = useSearchParams();

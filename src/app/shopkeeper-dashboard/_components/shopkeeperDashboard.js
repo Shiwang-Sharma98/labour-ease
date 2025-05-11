@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
 import ViewApplicants from './ViewApplicants';
 import './shopkeeperDashboard.css';
-import ShopkeeperNavbar from '@/app/ShopkeeperNavbar/ShopkeeperNavbar';
+import ShopkeeperNavbar from '@/app/shopkeeper-dashboard/_components/ShopkeeperNavbar';
 
 const ShopkeeperDashboard = () => {
     const { data: session, status } = useSession();

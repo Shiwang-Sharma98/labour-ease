@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import RateLabours from "./_components/RateLabours";
+import RateLabours from "../_components/RateLabours";
 
 const RateLaboursPage = () => {
   return (

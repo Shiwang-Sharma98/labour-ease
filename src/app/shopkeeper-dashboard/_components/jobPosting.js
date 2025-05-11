@@ -1,24 +1,66 @@
 'use client';
 
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { skillsData } from "@/app/skillsDatabase";
 import toast from "react-hot-toast";
 import './jobPosting.css';
-import ShopkeeperNavbar from "@/app/ShopkeeperNavbar/ShopkeeperNavbar";
+import ShopkeeperNavbar from "@/app/shopkeeper-dashboard/_components/ShopkeeperNavbar";
 
 const JobPosting = () => {
-  const [userID, setUserID] = useState(null);
+  const router = useRouter();
+  const { data: session, status } = useSession();
+  
+  const [shopkeeperId, setShopkeeperId] = useState(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [skills, setSkills] = useState([]);
   const [search, setSearch] = useState('');
   const [dropdownVisible, setDropdownVisible] = useState(false); // For dropdown visibility
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // Start with loading true for auth check
+  const [authError, setAuthError] = useState(null);
 
+  // Authentication verification
   useEffect(() => {
-    const storedData = localStorage.getItem('uniqueId');
-    setUserID(storedData);
-  }, []);
+    const verifyAuth = async () => {
+      // If still loading session, wait
+      if (status === 'loading') return;
+
+      // If not authenticated, redirect to login
+      if (status === 'unauthenticated') {
+        toast.error("Session expired. Please log in again.");
+        router.push('/login');
+        return;
+      }
+
+      // Verify user role via API
+      try {
+        const response = await fetch('/api/user');
+        const userData = await response.json();
+        
+        // Check if user is a shopkeeper
+        if (userData.role !== 'shopkeeper') {
+          setAuthError("Access denied. Only shopkeepers can access this page.");
+          toast.error("Access denied. Only shopkeepers can access this page.");
+          setTimeout(() => router.push('/dashboard'), 2000);
+          return;
+        }
+        
+        // Use ID from session/API instead of localStorage for security
+        const verifiedUserId = userData.id;
+        setShopkeeperId(verifiedUserId);
+        setLoading(false); // Auth check complete, no longer loading
+      } catch (error) {
+        console.error("Authentication verification error:", error);
+        setAuthError("Failed to verify authentication. Please try again.");
+        toast.error("Authentication error. Please log in again.");
+        setTimeout(() => router.push('/login'), 2000);
+      }
+    };
+    
+    verifyAuth();
+  }, [status, router]);
 
   const filteredSkills = skillsData.filter(skill =>
     skill.name.toLowerCase().includes(search.toLowerCase())
@@ -36,6 +78,12 @@ const JobPosting = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Verify we have the authenticated shopkeeper ID
+    if (!shopkeeperId) {
+      toast.error("Authentication error. Please try again.");
+      return;
+    }
+
     // Ensure description is at least 100 words
     const wordCount = description.trim().split(/\s+/).length;
     if (wordCount < 100) {
@@ -44,9 +92,15 @@ const JobPosting = () => {
     }
 
     setLoading(true);
-    toast.loading("Loading...");
+    const toastId = toast.loading("Creating job posting...");
   
-    const jobPost = { title, description, skills, userID };
+    const jobPost = { 
+      title, 
+      description, 
+      skills, 
+      userID: shopkeeperId // Use the verified ID from auth
+    };
+    
     try {
       const response = await fetch('/api/job_posting', {
         method: 'POST',
@@ -57,7 +111,7 @@ const JobPosting = () => {
       });
       const data = await response.json();
   
-      toast.dismiss();
+      toast.dismiss(toastId);
       if (response.ok) {
         toast.success('Job posting created successfully!');
         console.log('Job posting created:', data);
@@ -72,12 +126,33 @@ const JobPosting = () => {
         toast.error(data.message || 'Error creating job posting');
       }
     } catch (error) {
-      toast.dismiss();
+      toast.dismiss(toastId);
       toast.error('Failed to create job posting');
+      console.error("Error creating job posting:", error);
     } finally {
       setLoading(false);
     }
   };
+
+  // If there's an authentication error, show the error message
+  if (authError) {
+    return (
+      <div className="container mt-4">
+        <div className="alert alert-danger" role="alert">
+          {authError}
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading indicator while checking authentication
+  if (status === 'loading' || (loading && !shopkeeperId)) {
+    return (
+      <div className="container mt-5">
+        <p>Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <>

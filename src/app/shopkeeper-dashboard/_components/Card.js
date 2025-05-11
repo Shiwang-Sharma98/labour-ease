@@ -3,53 +3,59 @@
 import React, { useState, useEffect } from 'react';
 import './Card.css';
 import { toast } from 'react-hot-toast';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 export default function Card({ job, onDelete }) {
   const [showModal, setShowModal] = useState(false);
-  const [uniqueId, setUniqueId] = useState(null);
   const [loading, setLoading] = useState(false);
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
   useEffect(() => {
-    const storedUniqueId = localStorage.getItem('uniqueId');
-    if (storedUniqueId) {
-      setUniqueId(storedUniqueId);
+    // Authentication check when component mounts
+    if (status === 'unauthenticated') {
+      toast.error('Please log in to manage jobs');
     }
-  }, []);
+  }, [status]);
 
-  const handleApply = async () => {
-    if (!uniqueId) {
-      toast.error('User ID not found. Please log in.');
+  const handleDelete = async () => {
+    // Check authentication status
+    if (status === 'loading') {
+      toast.loading('Checking authentication...');
+      return;
+    }
+
+    if (status === 'unauthenticated') {
+      toast.error('Please log in to delete jobs');
+      router.push('/login');
       return;
     }
 
     setLoading(true);
-    const toastId = toast.loading('Loading...');
+    const toastId = toast.loading('Deleting job...');
 
     try {
-      const response = await fetch('/api/applyJob', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          jobId: job.id,
-          labourId: uniqueId,
-        }),
-      });
-
-      if (response.ok) {
-        toast.success('Job Applied Successfully!');
-        setShowModal(false);
-      } else {
-        const errorData = await response.json();
-        if (response.status === 409) {
-          toast.error('You have already applied for this job.');
-        } else {
-          toast.error(`Failed to apply. Error: ${errorData.message || 'Unknown error'}`);
-        }
+      // Get user data from API for additional verification
+      const userResponse = await fetch('/api/user');
+      const userData = await userResponse.json();
+      
+      if (!userData.id) {
+        toast.error('Unable to verify user credentials');
+        toast.dismiss(toastId);
+        setLoading(false);
+        return;
       }
+
+      // Call the passed onDelete function with necessary authentication
+      await onDelete(job.id);
+      
+      // Close the modal after successful deletion
+      setShowModal(false);
+      toast.success('Job deleted successfully');
     } catch (error) {
-      toast.error('An error occurred. Please try again later.');
+      console.error('Error deleting job:', error);
+      toast.error('An error occurred while deleting the job. Please try again later.');
     } finally {
       setLoading(false);
       toast.dismiss(toastId);
@@ -91,8 +97,8 @@ export default function Card({ job, onDelete }) {
               <button
                 type="button"
                 className="btn btn-danger"
-                onClick={() => onDelete(job.id)}
-                disabled={loading}
+                onClick={handleDelete}
+                disabled={loading || status === 'loading'}
               >
                 {loading ? 'Deleting...' : 'Delete Job'}
               </button>

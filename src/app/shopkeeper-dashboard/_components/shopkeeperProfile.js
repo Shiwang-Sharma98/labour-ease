@@ -1,7 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import "./shopkeeperProfile.css"
-import { useSearchParams } from 'next/navigation';
+import "./shopkeeperProfile.css";
 import { 
   Store, 
   MapPin, 
@@ -9,34 +8,76 @@ import {
   FileText, 
   Edit 
 } from 'lucide-react';
-import ShopkeeperNavbar from '@/app/ShopkeeperNavbar/ShopkeeperNavbar';
+import ShopkeeperNavbar from '@/app/shopkeeper-dashboard/_components/ShopkeeperNavbar';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'react-hot-toast'; // Assuming you're using react-hot-toast for notifications
 
 const ShopkeeperProfilePage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const searchParams = useSearchParams();
-  const userID = searchParams.get('userID');
+  const [authError, setAuthError] = useState(null);
+  
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
   useEffect(() => {
-    const fetchShopkeeperData = async () => {
+    const verifyAuth = async () => {
+      // If still loading session, wait
+      if (status === 'loading') return;
+
+      // If not authenticated, redirect to login
+      if (status === 'unauthenticated') {
+        toast.error("Session expired. Please log in again.");
+        router.push('/login');
+        return;
+      }
+
+      // Verify user role via API
       try {
-        const response = await fetch(`/api/updateShopkeeper?id=${userID}`);
-        if (response.ok) {
-          const data = await response.json();
-          setProfile(data);
-        } else {
-          console.error('Failed to fetch shopkeeper data');
+        const response = await fetch('/api/user');
+        const userData = await response.json();
+        
+        // Check if user is a shopkeeper
+        if (userData.role !== 'shopkeeper') {
+          setAuthError("Access denied. Only shopkeepers can access this page.");
+          toast.error("Access denied. Only shopkeepers can access this page.");
+          setTimeout(() => router.push('/dashboard'), 2000);
+          return;
         }
+        
+        // Use ID from session/API instead of URL parameter for security
+        const verifiedUserId = userData.id;
+        fetchShopkeeperData(verifiedUserId);
       } catch (error) {
-        console.error('Error fetching shopkeeper data:', error);
-      } finally {
-        setLoading(false);
+        console.error("Authentication verification error:", error);
+        setAuthError("Failed to verify authentication. Please try again.");
+        toast.error("Authentication error. Please log in again.");
+        setTimeout(() => router.push('/login'), 2000);
       }
     };
+    
+    verifyAuth();
+  }, [status, router]);
 
-    fetchShopkeeperData();
-  }, [userID]);
+  const fetchShopkeeperData = async (userID) => {
+    try {
+      const response = await fetch(`/api/updateShopkeeper?id=${userID}`);
+      if (response.ok) {
+        const data = await response.json();
+        setProfile(data);
+      } else {
+        console.error('Failed to fetch shopkeeper data');
+        toast.error("Failed to load profile data");
+      }
+    } catch (error) {
+      console.error('Error fetching shopkeeper data:', error);
+      toast.error("Error loading profile information");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -59,12 +100,15 @@ const ShopkeeperProfilePage = () => {
       if (response.ok) {
         const data = await response.json();
         setProfile(data.data);
+        toast.success("Profile updated successfully");
       } else {
         const errorData = await response.json();
         console.error(errorData.message);
+        toast.error("Failed to update profile");
       }
     } catch (error) {
       console.error('Failed to update profile', error);
+      toast.error("Error updating profile");
     }
   };
 
@@ -80,6 +124,10 @@ const ShopkeeperProfilePage = () => {
         <div className="loader"></div>
       </div>
     );
+  }
+
+  if (authError) {
+    return <div className="auth-error">{authError}</div>;
   }
 
   if (!profile) {
