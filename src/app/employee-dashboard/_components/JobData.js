@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import Card from '../../employee-apply/_components/Card';
+import Card from '../_components/Card';
 import './JobData.css';
 import toast from 'react-hot-toast';
 import EmployeeNavbar from '@/app/employee-dashboard/_components/EmployeeNavbar';
