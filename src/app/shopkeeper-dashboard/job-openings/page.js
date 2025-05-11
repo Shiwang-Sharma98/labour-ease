@@ -1,6 +1,6 @@
 
 import {React, Suspense} from "react"
-import JobOpenings from "./_components/JobOpenings"
+import JobOpenings from "../_components/JobOpenings"
 
 const jobOpeningsMainPage=()=>{   
 return(

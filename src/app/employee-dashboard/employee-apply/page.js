@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import JobData from "./_components/JobData";
+import JobData from "../_components/JobData";
 
 const AllJobsPage = () => {
   return (

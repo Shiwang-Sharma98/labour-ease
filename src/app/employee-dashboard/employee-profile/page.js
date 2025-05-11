@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import EmployeeProfile from "./_components/EmployeeProfile";
+import EmployeeProfile from "../_components/EmployeeProfile";
 
 const ShopkkeeperDashboardPage = () => {
   return (
