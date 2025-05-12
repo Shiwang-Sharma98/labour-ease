@@ -101,11 +101,11 @@ const JobPostingsSlider = () => {
                   <button
                     onClick={handleApplyClick}
                     className="
-                      px-6 py-2
-                      bg-primary text-primary-foreground
-                      rounded-md
-                      hover:bg-primary/90
-                      transition duration-300
+                    px-6 py-2
+    bg-primary text-primary-foreground
+    rounded-full
+    hover:bg-primary/90
+    transition duration-300
                     "
                   >
                     Apply Now
@@ -114,12 +114,12 @@ const JobPostingsSlider = () => {
                     <button
                       onClick={() => handleReadMore(job)}
                       className="
-                        px-6 py-2
-                        border-2 border-foreground
-                        text-foreground
-                        rounded-md
-                        hover:bg-foreground/10
-                        transition duration-300
+                         px-6 py-2
+      border-2 border-foreground
+      text-foreground
+      rounded-full
+      hover:bg-foreground/10
+      transition duration-300
                       "
                     >
                       Read More
