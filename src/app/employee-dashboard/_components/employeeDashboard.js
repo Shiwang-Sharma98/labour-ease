@@ -1,48 +1,131 @@
 'use client';
 
-// pages/dashboard.js
-import Sidebar from "./EmployeeNavbar";
+import React from 'react';
+import Sidebar from './EmployeeNavbar';
+import DashboardHeader from './DashboardHeader';
+import { useSession } from 'next-auth/react';
 
 const Dashboard = () => {
+  const { data: session } = useSession();
+  const name = session?.user?.name || 'User';
+
   return (
-    <div className="flex">
+    <div className="flex bg-[rgb(var(--background))] text-[rgb(var(--foreground))] min-h-screen transition-colors">
       <Sidebar />
-      <div className="flex-1 p-6 ml-16 sm:ml-64">
-        {/* Dashboard Overview */}
-        <div className="flex flex-wrap justify-between gap-4 p-4">
-          <div className="bg-green-500 text-white p-6 rounded-lg flex-1">
-            <h3 className="text-xl">34 Applied Jobs</h3>
-          </div>
-          <div className="bg-blue-500 text-white p-6 rounded-lg flex-1">
-            <h3 className="text-xl">121 Favorite Jobs</h3>
-          </div>
-          <div className="bg-yellow-500 text-white p-6 rounded-lg flex-1">
-            <h3 className="text-xl">56 Job Alerts</h3>
-          </div>
-        </div>
+      <div className="flex-1 ml-16 sm:ml-64">
+        <DashboardHeader />
 
-        {/* Profile Editing Reminder */}
-        <div className="bg-blue-100 p-4 rounded-lg mb-4">
-          <p>Your profile editing is not completed.</p>
-          <button className="bg-blue-500 text-white px-4 py-2 rounded-md">Edit Profile</button>
-        </div>
+        <div className="p-6">
+          {/* Greeting */}
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold">👋 {name}</h1>
+            <p className="text-muted-foreground">Here is your daily activities and job alerts</p>
+          </div>
 
-        {/* Recently Applied Jobs */}
-        <div className="p-4">
-          <h2 className="text-2xl font-semibold">Recently Applied</h2>
-          <div className="mt-4">
-            {[
-              { title: 'Network Engineer', location: 'Washington, USA', salary: '$107K-$170K/month', date: 'Feb 5, 2024', status: 'Active' },
-              { title: 'UX Designer', location: 'Chandigarh, India', salary: '$107K-$170K/month', date: 'Jan 13, 2024', status: 'Active' },
-              // Add more jobs here...
-            ].map((job, index) => (
-              <div key={index} className="bg-white p-4 rounded-lg shadow-md mb-4">
-                <h3 className="text-xl font-semibold">{job.title}</h3>
-                <p>{job.location}</p>
-                <p>{job.salary}</p>
-                <p>Status: {job.status}</p>
-              </div>
-            ))}
+          {/* Stats Boxes */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            <div className="bg-muted text-[rgb(var(--foreground))] p-6 rounded-xl">
+              <h3 className="text-3xl font-bold">34</h3>
+              <p className="text-sm text-muted-foreground mt-1">Applied Jobs</p>
+            </div>
+            <div className="bg-muted text-[rgb(var(--foreground))] p-6 rounded-xl">
+              <h3 className="text-3xl font-bold">121</h3>
+              <p className="text-sm text-muted-foreground mt-1">Favorite Jobs</p>
+            </div>
+            <div className="bg-muted text-[rgb(var(--foreground))] p-6 rounded-xl">
+              <h3 className="text-3xl font-bold">56</h3>
+              <p className="text-sm text-muted-foreground mt-1">Job Alerts</p>
+            </div>
+          </div>
+
+          
+
+          {/* Recently Applied */}
+          <div className="bg-[rgb(var(--card))] text-[rgb(var(--foreground))] p-6 rounded-xl shadow-md">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">Recently Applied</h2>
+              <button className="text-sm text-primary hover:underline">View All</button>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead>
+                  <tr className="text-muted-foreground border-b">
+                    <th className="py-2 px-4">Jobs</th>
+                    <th className="py-2 px-4">Date Applied</th>
+                    <th className="py-2 px-4">Status</th>
+                    <th className="py-2 px-4">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    {
+                      company: 'Google',
+                      title: 'Network Engineer',
+                      tag: 'Remote',
+                      location: 'Washington, USA',
+                      salary: '$107k-170k/month',
+                      date: 'Feb 5, 2024 19:28',
+                      status: 'Active'
+                    },
+                    {
+                      company: 'Dribbble',
+                      title: 'UX Designer',
+                      tag: 'Contract Base',
+                      location: 'Chandigarh, India',
+                      salary: '$107k-170k/month',
+                      date: 'Jan 13, 2024 03:33',
+                      status: 'Active'
+                    },
+                    {
+                      company: 'Facebook',
+                      title: 'User Researcher',
+                      tag: 'Temporary',
+                      location: 'London, UK',
+                      salary: '$120k-185k/month',
+                      date: 'Mar 5, 2024 09:23',
+                      status: 'Active'
+                    },
+                    {
+                      company: 'Google',
+                      title: 'Software Engineer',
+                      tag: 'Remote',
+                      location: 'Mumbai, India',
+                      salary: '$134k-185k/month',
+                      date: 'Mar 9, 2024 12:45',
+                      status: 'Active'
+                    },
+                    {
+                      company: 'Facebook',
+                      title: 'Network Engineer',
+                      tag: 'Contract Base',
+                      location: 'Washington, USA',
+                      salary: '$134k-210k/month',
+                      date: 'Apr 12, 2024 04:28',
+                      status: 'Active'
+                    },
+                  ].map((job, index) => (
+                    <tr key={index} className="border-b hover:bg-muted/60">
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          
+                          <div>
+                            <div className="font-semibold">{job.title}</div>
+                            <div className="text-muted-foreground text-xs">{job.location}</div>
+                            <span className="bg-muted text-muted-foreground text-xs px-2 py-0.5 rounded-md inline-block mt-1">{job.tag}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">{job.date}</td>
+                      <td className="py-3 px-4 text-green-600 font-medium">{job.status}</td>
+                      <td className="py-3 px-4">
+                        <button className="text-primary hover:underline">View Details</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -51,5 +134,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
-
