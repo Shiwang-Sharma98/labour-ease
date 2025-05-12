@@ -43,7 +43,7 @@ export default function Dashboard() {
           if (userData.role === 'shopkeeper') {
             setMessage(`Role verified: shopkeeper. Redirecting to shopkeeper dashboard...`);
             router.push(`/shopkeeper-dashboard?userID=${userData.id}`);
-          } else if (userData.role === 'employee') {
+          } else if (userData.role === 'labour') {
             setMessage(`Role verified: employee. Redirecting to employee dashboard...`);
             router.push(`/employee-dashboard?userID=${userData.id}`);
           } else {
