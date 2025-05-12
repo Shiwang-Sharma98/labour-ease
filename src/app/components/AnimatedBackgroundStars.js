@@ -29,6 +29,9 @@ export default function AnimatedBackgroundStars() {
       id="tsparticles"
       init={particlesInit}
       options={{
+        background: {
+              color: { value: "transparent" }
+             },
         preset: "stars",
         fullScreen: { enable: false },
         particles: {
