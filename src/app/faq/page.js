@@ -106,21 +106,10 @@ export default function Faq() {
         </AnimatePresence>
       </div>
 
-      {/* Replace this: */}
-      {/* <motion.a
-        href="/contact"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className="mt-12 inline-block px-8 py-3 rounded-full bg-[rgb(var(--primary))] text-[rgb(var(--primary-foreground))] font-semibold uppercase tracking-wide shadow-lg transition-colors duration-300 hover:bg-[rgb(var(--ring))]"
-      >
-        Got more questions? Get in touch
-      </motion.a> */}
-
-      {/* With your reusable blob button: */}
       <div className="mt-12">
         <BlobButton
           href="/contact"
-          className="w-46 text-primary-foreground"  // adjust width or text colour as you like
+          className="w-46 text-primary-foreground" 
         >
           Get in touch
         </BlobButton>
