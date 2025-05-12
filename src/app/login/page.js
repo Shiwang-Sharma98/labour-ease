@@ -185,7 +185,7 @@ export default function Login() {
           {/* Right pane with image */}
           <div className="hidden md:flex flex-[2] overflow-hidden">
             <Image
-              src="/images/glenn-carstens-peters-npxXWgQ33ZQ-unsplash.jpg"
+              src="/images/6310507.jpg"
               alt="Login"
               width={400}
               height={300}
