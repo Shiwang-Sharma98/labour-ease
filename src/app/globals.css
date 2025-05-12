@@ -1,6 +1,78 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+html,
+body {
+  background-color: rgb(var(--background));
+  color:            rgb(var(--foreground));
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 1) Theme variables – no hard-coded colours! */
+:root {
+  --blob-color:            rgb(var(--primary));
+  --blob-text-color:       rgb(var(--primary-foreground));
+  --blob-hover-text-color: rgb(var(--background));
+  --blob-border-width:     2px;
+}
+
+/* 2) Blob-button base */
+.blob-btn {
+  @apply relative inline-block overflow-hidden font-bold uppercase tracking-wide;
+  padding: 0.75rem 1.5rem;
+  color: var(--blob-color);
+  background: transparent;
+  border: var(--blob-border-width) solid var(--blob-color);
+  border-radius: 9999px;
+  transition: color 0.5s ease;
+}
+
+/* 3) White “canvas” layer behind everything */
+.blob-btn__inner {
+  @apply absolute inset-0;
+  background: rgb(var(--background));
+  z-index: 0;
+}
+
+/* 4) Gooey blobs container */
+.blob-btn__blobs {
+  @apply absolute inset-0;
+  filter: url('#goo');
+  z-index: 1;
+  pointer-events: none; /* clicks pass through to the <a> */
+}
+
+/* 5) Individual blobs */
+.blob-btn__blob {
+  @apply absolute;
+  top: var(--blob-border-width);
+  width: 25%;
+  height: calc(100% - var(--blob-border-width)*2);
+  background: var(--blob-color);
+  border-radius: 9999px;
+  transform: translateY(150%) scale(1.4);
+  transition: transform 0.45s ease;
+}
+.blob-btn__blob:nth-child(1) { left:   0%;    transition-delay: 0s;   }
+.blob-btn__blob:nth-child(2) { left:  25%;    transition-delay: 0.08s;}
+.blob-btn__blob:nth-child(3) { left:  50%;    transition-delay: 0.16s;}
+.blob-btn__blob:nth-child(4) { left:  75%;    transition-delay: 0.24s;}
+
+/* 6) Hover state – pull blobs up & change text colour */
+.blob-btn:hover {
+  color: var(--blob-hover-text-color);
+}
+.blob-btn:hover .blob-btn__blob {
+  transform: translateY(0) scale(1.4);
+}
+
 
 :root {
   --background: 255 255 255;
