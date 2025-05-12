@@ -1,14 +1,20 @@
 'use client';
+
 import Link from 'next/link';
 import { useState } from 'react';
-import { Home, Briefcase, Heart, Bell, Settings } from 'lucide-react';
+import { Home, Briefcase, Heart, Bell, Edit, LogOut } from 'lucide-react';
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
+  const handleLogout = () => {
+    // Add your logout logic here, e.g., clearing tokens, redirecting to login page, etc.
+    console.log("Logging out...");
+  };
+
   return (
     <div
-      className={`fixed top-0 left-0 h-full bg-gray-800 text-white transition-all ${
+      className={`fixed top-0 left-0 h-full bg-[rgb(var(--sidebar))] text-[rgb(var(--foreground))] transition-all ${
         isOpen ? 'w-64' : 'w-16'
       } sm:w-64`}
     >
@@ -24,26 +30,37 @@ const Sidebar = () => {
 
       {/* Navigation Links */}
       <div className="space-y-4 mt-8">
-        <Link href="/dashboard" className="flex items-center p-4 hover:bg-gray-700">
+        <Link href="/dashboard" className="flex items-center p-4 hover:bg-muted rounded-md">
           <Home className="w-5 h-5" />
           <span className={`ml-3 ${isOpen ? 'block' : 'hidden'} sm:block`}>Overview</span>
         </Link>
-        <Link href="/applied-jobs" className="flex items-center p-4 hover:bg-gray-700">
+        <Link href="/applied-jobs" className="flex items-center p-4 hover:bg-muted rounded-md">
           <Briefcase className="w-5 h-5" />
           <span className={`ml-3 ${isOpen ? 'block' : 'hidden'} sm:block`}>Applied Jobs</span>
         </Link>
-        <Link href="/favorite-jobs" className="flex items-center p-4 hover:bg-gray-700">
+        <Link href="/favorite-jobs" className="flex items-center p-4 hover:bg-muted rounded-md">
           <Heart className="w-5 h-5" />
           <span className={`ml-3 ${isOpen ? 'block' : 'hidden'} sm:block`}>Favourite Jobs</span>
         </Link>
-        <Link href="/job-alerts" className="flex items-center p-4 hover:bg-gray-700">
+        <Link href="/job-alerts" className="flex items-center p-4 hover:bg-muted rounded-md">
           <Bell className="w-5 h-5" />
           <span className={`ml-3 ${isOpen ? 'block' : 'hidden'} sm:block`}>Job Alerts</span>
         </Link>
-        <Link href="/settings" className="flex items-center p-4 hover:bg-gray-700">
-          <Settings className="w-5 h-5" />
-          <span className={`ml-3 ${isOpen ? 'block' : 'hidden'} sm:block`}>Settings</span>
+        <Link href="/profile" className="flex items-center p-4 hover:bg-muted rounded-md">
+          <Edit className="w-5 h-5" />
+          <span className={`ml-3 ${isOpen ? 'block' : 'hidden'} sm:block`}>Edit Profile</span>
         </Link>
+      </div>
+
+      {/* Logout Button */}
+      <div className="absolute bottom-4 w-full px-4">
+        <button
+          onClick={handleLogout}
+          className="flex items-center justify-center w-full p-4 hover:bg-muted rounded-md text-red-500"
+        >
+          <LogOut className="w-5 h-5" />
+          <span className={`ml-3 ${isOpen ? 'block' : 'hidden'} sm:block`}>Logout</span>
+        </button>
       </div>
     </div>
   );
