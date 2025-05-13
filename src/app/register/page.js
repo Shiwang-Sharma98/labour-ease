@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import BlobButton from "../components/BlobButton";
+import { motion } from "framer-motion";
 
 export default function Register() {
   const router = useRouter();
@@ -27,6 +29,7 @@ export default function Register() {
   useEffect(() => {
     const stored = localStorage.getItem('theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    setIsVerificationStage(true);
     if (stored === 'dark' || (!stored && prefersDark)) {
       document.documentElement.classList.add('dark');
       setIsDark(true);
@@ -132,6 +135,41 @@ export default function Register() {
     }
   };
 
+  // Modified BlobButton to work with regular buttons
+  const MotionButton = motion.button;
+
+  const CustomBlobButton = ({ children, className = "", onClick, disabled = false, type = "button" }) => {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <MotionButton
+          type={type}
+          className={`blob-btn ${className}`}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          transition={{ type: "spring", stiffness: 300 }}
+          onClick={onClick}
+          disabled={disabled}
+        >
+          {/* Goo layer */}
+          <span className="blob-btn__inner" />
+          <span className="blob-btn__blobs">
+            <span className="blob-btn__blob" />
+            <span className="blob-btn__blob" />
+            <span className="blob-btn__blob" />
+            <span className="blob-btn__blob" />
+          </span>
+          
+          {/* Button label */}
+          <span className="relative z-10">{children}</span>
+        </MotionButton>
+      </motion.div>
+    );
+  };
+
   return (
     <div
       className="relative h-[200vh] bg-cover bg-center bg-no-repeat"
@@ -213,40 +251,56 @@ export default function Register() {
                   </div>
                 </>
               ) : (
-                // OTP Verification Stage
-                <div className="flex flex-col p-2 border border-gray-300 dark:border-muted rounded mb-5 transition-all duration-300 focus-within:border-[#8c7569]">
-                  <label htmlFor="otp" className="text-xs uppercase font-semibold tracking-wide">
-                    Verification Code
-                  </label>
-                  <input
-                    type="text" 
-                    name="otp" 
-                    id="otp"
-                    placeholder="Enter 6-digit code" 
-                    value={otpData.otp} 
-                    onChange={changeHandler} 
-                    required
-                    maxLength={6}
-                    className="bg-transparent outline-none border-0 pt-1 text-sm placeholder-gray-300 dark:placeholder-muted-foreground text-center tracking-[0.5em]"
-                  />
-                  <p className="text-xs text-center mt-2 text-gray-500">
-                    A verification code has been sent to {otpData.email}
-                  </p>
+                // Enhanced OTP Verification Stage
+                <div className="flex flex-col items-center mt-6 mb-8">
+                  <div className="w-full max-w-xs p-4 border border-gray-300 dark:border-muted rounded-lg shadow-sm transition-all duration-300 focus-within:border-[#8c7569]">
+                    <label htmlFor="otp" className="block text-center text-xs uppercase font-semibold tracking-wide mb-2">
+                      Verification Code
+                    </label>
+                    
+                    <div className="flex justify-center mb-4">
+                      <input
+                        type="text" 
+                        name="otp" 
+                        id="otp"
+                        placeholder="000000" 
+                        value={otpData.otp} 
+                        onChange={changeHandler} 
+                        required
+                        maxLength={6}
+                        className="bg-transparent outline-none border-b-2 border-gray-300 dark:border-muted pt-1 text-lg placeholder-gray-300 dark:placeholder-muted-foreground text-center tracking-[0.5em] w-full max-w-[12rem] focus:border-[#8c7569] transition-colors"
+                      />
+                    </div>
+                    
+                    <p className="text-xs text-center mt-2 text-gray-500 dark:text-gray-400">
+                      A verification code has been sent to 
+                      <span className="font-medium block mt-1 text-gray-700 dark:text-gray-300">
+                        {otpData.email}
+                      </span>
+                    </p>
+                  </div>
                 </div>
               )}
               
-              {/* Submit */}
-              <div className="flex justify-end">
-                <button 
-                  type="submit" 
-                  disabled={isLoading} 
-                  className="py-2 px-4 bg-[#8c7569] hover:bg-[#55311c] text-white rounded disabled:opacity-50 transition"
-                >
-                  {isLoading 
-                    ? 'Loading...' 
-                    : (isVerificationStage ? 'Verify' : 'Register')
-                  }
-                </button>
+              {/* Submit Buttons */}
+              <div className="flex justify-center mt-6">
+                {isVerificationStage ? (
+                  <CustomBlobButton 
+                    type="submit" 
+                    disabled={isLoading} 
+                    className="py-2 px-8 bg-[#8c7569] hover:bg-[#55311c] text-white rounded-md disabled:opacity-50 transition w-full max-w-xs"
+                  >
+                    {isLoading ? 'Verifying...' : 'Verify'}
+                  </CustomBlobButton>
+                ) : (
+                  <CustomBlobButton 
+                    type="submit" 
+                    disabled={isLoading} 
+                    className="py-2 px-8 bg-[#8c7569] hover:bg-[#55311c] text-white rounded-md disabled:opacity-50 transition"
+                  >
+                    {isLoading ? 'Registering...' : 'Register'}
+                  </CustomBlobButton>
+                )}
               </div>
             </form>
             
@@ -279,12 +333,14 @@ export default function Register() {
         </div>
         
         {/* Register Trigger Button */}
-        <button 
-          onClick={() => setIsModalOpen(true)} 
-          className={`mt-4 py-2 px-6 rounded-full bg-white shadow dark:bg-card dark:text-[#e2e8f0] transition-opacity ${isModalOpen ? 'opacity-0 pointer-events-none' : ''}`}
-        >
-          Click here to register
-        </button>
+        {!isModalOpen && (
+          <CustomBlobButton 
+            onClick={() => setIsModalOpen(true)} 
+            className={`mt-4 py-2 px-6 rounded-full bg-white shadow dark:bg-card dark:text-[#e2e8f0] transition-opacity`}
+          >
+            Click here to register
+          </CustomBlobButton>
+        )}
       </div>
     </div>
   );
