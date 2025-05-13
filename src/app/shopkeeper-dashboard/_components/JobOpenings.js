@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Card from './Card';
 import './jobOpenings.css';
-import ShopkeeperNavbar from '@/app/shopkeeper-dashboard/_components/ShopkeeperNavbar';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
@@ -129,7 +128,6 @@ const JobData = () => {
   if (loading || status === 'loading') {
     return (
       <>
-        <ShopkeeperNavbar />
         <div className="spinner-container text-center">
           <div className="spinner-border" role="status">
             <span className="visually-hidden">Loading...</span>
@@ -142,7 +140,6 @@ const JobData = () => {
 
   return (
     <>
-      <ShopkeeperNavbar />
       <div className="container mt-5 job-data-container">
         <h2 className="text-center mb-4">Available Job Postings</h2>
         <div className="row">

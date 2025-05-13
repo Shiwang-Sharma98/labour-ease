@@ -1,16 +1,13 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import ViewApplicants from './ViewApplicants';
-import './shopkeeperDashboard.css';
-import ShopkeeperNavbar from '@/app/shopkeeper-dashboard/_components/ShopkeeperNavbar';
+import ShopkeeperSidebar from './ShopkeeperSidebar';
 
 const ShopkeeperDashboard = () => {
     const { data: session, status } = useSession();
-    const searchParams = useSearchParams();
-    const userID = searchParams.get('userID');
     const router = useRouter();
 
     const [jobPostings, setJobPostings] = useState([]);
@@ -20,6 +17,7 @@ const ShopkeeperDashboard = () => {
     const [filter, setFilter] = useState("all");
     const [viewApplicants, setViewApplicants] = useState(null);
     const [authError, setAuthError] = useState(null);
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
     useEffect(() => {
         // Check authentication and role
@@ -153,11 +151,11 @@ const ShopkeeperDashboard = () => {
     // If there's an authentication error, show error message
     if (authError) {
         return (
-            <div className="auth-error-container">
-                <div className="auth-error-message">
-                    <h2>Authentication Error</h2>
-                    <p>{authError}</p>
-                    <p>Redirecting...</p>
+            <div className="flex items-center justify-center min-h-screen bg-gray-100">
+                <div className="bg-white p-6 rounded-lg shadow-md max-w-md w-full">
+                    <h2 className="text-2xl font-bold text-red-600 mb-4">Authentication Error</h2>
+                    <p className="mb-4 text-gray-700">{authError}</p>
+                    <p className="text-gray-500">Redirecting...</p>
                 </div>
             </div>
         );
@@ -166,37 +164,46 @@ const ShopkeeperDashboard = () => {
     // Show loading state while checking authentication
     if (status === 'loading') {
         return (
-            <div className="loading-container">
-                <p>Verifying your session...</p>
+            <div className="flex items-center justify-center min-h-screen">
+                <p className="text-lg text-gray-600">Verifying your session...</p>
             </div>
         );
     }
 
-    return (
-        <>
-            {viewApplicants ? (
-                <ViewApplicants 
-                    applicants={viewApplicants.applicants} 
-                    onBack={handleBackToJobs} 
-                    jobPostingId={viewApplicants.jobPostingId} 
-                    shopkeeperId={shopkeeperId} 
-                />
-            ) : (
-                <>
-                    <ShopkeeperNavbar/>
+    const handleSidebarToggle = () => {
+        setSidebarCollapsed(!sidebarCollapsed);
+    };
 
-                    <div className="container mt-4">
+    return (
+        <div className="flex min-h-screen bg-gray-50">
+            <ShopkeeperSidebar />
+            
+            <div className={`flex-1 transition-all duration-300 ${sidebarCollapsed ? 'ml-[70px]' : 'ml-[250px]'} md:ml-[250px]`}>
+                {viewApplicants ? (
+                    <ViewApplicants 
+                        applicants={viewApplicants.applicants} 
+                        onBack={handleBackToJobs} 
+                        jobPostingId={viewApplicants.jobPostingId} 
+                        shopkeeperId={shopkeeperId} 
+                    />
+                ) : (
+                    <div className="p-6">
+                        <h1 className="text-3xl font-bold text-gray-800 mb-6">Dashboard</h1>
+                        
                         {/* Session status indicator (for testing) */}
-                        <div className="session-status mb-3 p-2 rounded bg-light">
-                            <small>Session active: {status === 'authenticated' ? 'Yes' : 'No'}</small>
-                            <small className="ms-3">Session expires in: {session?.expires ? new Date(session.expires).toLocaleTimeString() : 'N/A'}</small>
+                        <div className="mb-6 p-3 rounded bg-gray-100 text-gray-600 text-sm">
+                            <span>Session active: {status === 'authenticated' ? 'Yes' : 'No'}</span>
+                            <span className="ml-4">Session expires in: {session?.expires ? new Date(session.expires).toLocaleTimeString() : 'N/A'}</span>
                         </div>
 
-                        <div className="dashboard-header d-flex justify-content-between align-items-center mb-3">
-                            <h2>Total Job Postings: {jobPostings.length}</h2>
-                            <div className="filter">
-                                <label>Filter By: </label>
-                                <select onChange={(e) => setFilter(e.target.value)} className="ms-2">
+                        <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
+                            <h2 className="text-xl font-semibold text-gray-700 mb-3 md:mb-0">Total Job Postings: {jobPostings.length}</h2>
+                            <div className="flex items-center">
+                                <label className="text-gray-600 mr-2">Filter By: </label>
+                                <select 
+                                    onChange={(e) => setFilter(e.target.value)} 
+                                    className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                                >
                                     <option value="all">All Posts</option>
                                     <option value="new">New</option>
                                     <option value="old">Old</option>
@@ -205,52 +212,53 @@ const ShopkeeperDashboard = () => {
                             </div>
                         </div>
 
-                        <div className="job-cards">
+                        <div className="space-y-3">
                             {loading ? (
-                                <p>Loading job postings...</p>
+                                <p className="text-gray-600">Loading job postings...</p>
                             ) : filteredJobs.length > 0 ? (
                                 filteredJobs.map((job) => (
-                                    <div key={job.job_posting_id} className="job-card d-flex justify-content-between align-items-center p-3 mb-2 border rounded">
-                                        <div className="job-name">{job.job_title}</div>
-                                        <div className="job-details">
+                                    <div 
+                                        key={job.job_posting_id} 
+                                        className="flex flex-col md:flex-row md:justify-between md:items-center p-4 border border-gray-200 rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow"
+                                    >
+                                        <div className="font-medium text-lg text-gray-800 mb-2 md:mb-0">{job.job_title}</div>
+                                        <div className="text-gray-600 mb-2 md:mb-0 md:mx-4">
                                             <div>Due Date: {job.due_date}</div>
                                             <div>Applicants: {job.applicants.length}</div>
                                         </div>
-                                        <div className="view-button">
-                                            <button 
-                                                className="btn btn-primary" 
-                                                onClick={() => handleViewApplicants(job)}
-                                            >
-                                                View Applicants
-                                            </button>
-                                        </div>
+                                        <button 
+                                            className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 transition-colors"
+                                            onClick={() => handleViewApplicants(job)}
+                                        >
+                                            View Applicants
+                                        </button>
                                     </div>
                                 ))
                             ) : (
-                                <p>No job postings found.</p>
+                                <p className="text-gray-600">No job postings found.</p>
                             )}
                         </div>
 
                         {/* Section to display reviews */}
-                        <div className="reviews-section mt-4">
-                            <h3>Reviews from Labours</h3>
+                        <div className="mt-8">
+                            <h3 className="text-xl font-semibold text-gray-700 mb-4">Reviews from Labours</h3>
                             {reviews.length > 0 ? (
-                                <ul className="list-group">
+                                <ul className="space-y-3">
                                     {reviews.map((review) => (
-                                        <li key={review.id} className="list-group-item">
-                                            <strong>Rating: {review.rating}</strong>
-                                            <p>{review.review}</p>
+                                        <li key={review.id} className="border border-gray-200 rounded-lg p-4 bg-white">
+                                            <div className="font-medium mb-2">Rating: {review.rating}</div>
+                                            <p className="text-gray-600">{review.review}</p>
                                         </li>
                                     ))}
                                 </ul>
                             ) : (
-                                <p>No reviews available.</p>
+                                <p className="text-gray-600">No reviews available.</p>
                             )}
                         </div>
                     </div>
-                </>
-            )}
-        </>
+                )}
+            </div>
+        </div>
     );
 };
 

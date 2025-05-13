@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect,useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn, useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
@@ -21,7 +21,7 @@ export default function Login() {
   // Redirect if already logged in
   useEffect(() => {
     if (status === "authenticated") {
-      router.push("/dashboard");
+      router.push("/transition"); // Changed this to go through transition page
     }
   }, [status, router]);
 
@@ -53,7 +53,7 @@ export default function Login() {
       toast.dismiss(toastId);
       if (result.ok) {
         toast.success("Login successful!");
-        router.push("/dashboard");
+        router.push("/transition"); // Changed this to go through transition page
       } else {
         toast.error(result.error || "Failed to login");
       }
