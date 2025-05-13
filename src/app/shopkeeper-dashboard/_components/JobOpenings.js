@@ -115,7 +115,7 @@ const JobData = () => {
   if (authError) {
     return (
       <>
-        <ShopkeeperNavbar />
+        
         <div className="container mt-5 text-center">
           <div className="alert alert-danger" role="alert">
             {authError}
