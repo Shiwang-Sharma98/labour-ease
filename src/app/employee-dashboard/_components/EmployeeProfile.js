@@ -5,6 +5,8 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import Link from 'next/link';
+import Sidebar from './EmployeeNavbar';
+
 
 import { skillsData } from '@/app/skillsDatabase';
 
@@ -64,7 +66,10 @@ const EmployeeProfile = () => {
   }
 
   return (
-    <div className="flex justify-center items-center px-4 py-10 min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-white">
+    <div>
+      <Sidebar/>
+      
+        <div className="flex justify-center items-center px-4 py-10 min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-white">
       <div className="w-full max-w-lg bg-slate-950 shadow-lg rounded-2xl p-8">
         {/* Header Section */}
         <div className="flex flex-col items-center">
@@ -113,6 +118,8 @@ const EmployeeProfile = () => {
         </div>
       </div>
     </div>
+    </div>
+    
   );
 };
 

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from './EmployeeNavbar';
 import DashboardHeader from './DashboardHeader';
 import { useSession } from 'next-auth/react';
@@ -8,6 +8,24 @@ import { useSession } from 'next-auth/react';
 const Dashboard = () => {
   const { data: session } = useSession();
   const name = session?.user?.name || 'User';
+
+
+  const [jobAlertCount, setJobAlertCount] = useState(0);
+  useEffect(() => {
+    async function fetchJobAlerts() {
+      if (!session?.user?.id) return;
+
+      try {
+        const res = await fetch(`/api/currentOpenings?shopkeeper_id=${session.user.id}`);
+        const data = await res.json();
+        setJobAlertCount(data.total);
+      } catch (err) {
+        console.error('Failed to fetch job alerts:', err);
+      }
+    }
+
+    fetchJobAlerts();
+  }, [session]);
 
   return (
     <div className="flex bg-[rgb(var(--background))] text-[rgb(var(--foreground))] min-h-screen transition-colors">
@@ -28,12 +46,9 @@ const Dashboard = () => {
               <h3 className="text-3xl font-bold">34</h3>
               <p className="text-sm text-muted-foreground mt-1">Applied Jobs</p>
             </div>
+            
             <div className="bg-muted text-[rgb(var(--foreground))] p-6 rounded-xl">
-              <h3 className="text-3xl font-bold">121</h3>
-              <p className="text-sm text-muted-foreground mt-1">Favorite Jobs</p>
-            </div>
-            <div className="bg-muted text-[rgb(var(--foreground))] p-6 rounded-xl">
-              <h3 className="text-3xl font-bold">56</h3>
+              <h3 className="text-3xl font-bold">{jobAlertCount}</h3>
               <p className="text-sm text-muted-foreground mt-1">Job Alerts</p>
             </div>
           </div>
