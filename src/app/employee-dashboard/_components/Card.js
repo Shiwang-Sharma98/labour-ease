@@ -1,6 +1,5 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import './Card.css';
 import { toast } from 'react-hot-toast';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -12,14 +11,12 @@ export default function Card({ job }) {
   const router = useRouter();
 
   useEffect(() => {
-    // Authentication check when component mounts
     if (status === 'unauthenticated') {
       toast.error('Please log in to apply for jobs');
     }
   }, [status]);
 
   const handleApply = async () => {
-    // Check authentication status
     if (status === 'loading') {
       toast.loading('Checking authentication...');
       return;
@@ -35,10 +32,9 @@ export default function Card({ job }) {
     const toastId = toast.loading('Applying for job...');
 
     try {
-      // Get user data from API for additional verification
       const userResponse = await fetch('/api/user');
       const userData = await userResponse.json();
-      
+
       if (!userData.id) {
         toast.error('Unable to verify user credentials');
         toast.dismiss(toastId);
@@ -53,7 +49,7 @@ export default function Card({ job }) {
         },
         body: JSON.stringify({
           jobId: job.job_id,
-          labourId: userData.id, // Use verified ID from session
+          labourId: userData.id,
         }),
       });
 
@@ -62,16 +58,13 @@ export default function Card({ job }) {
         setShowModal(false);
       } else {
         const errorData = await response.json();
-        console.error('Failed to apply for the job:', errorData);
-
         if (response.status === 409) {
           toast.error('You have already applied for this job.');
         } else {
-          toast.error(`Failed to apply for the job. Error: ${errorData.message || 'Unknown error'}`);
+          toast.error(`Failed to apply: ${errorData.message || 'Unknown error'}`);
         }
       }
     } catch (error) {
-      console.error('Error applying for job:', error);
       toast.error('An error occurred. Please try again later.');
     } finally {
       setLoading(false);
@@ -81,48 +74,51 @@ export default function Card({ job }) {
 
   const truncateText = (text, wordLimit) => {
     const words = text.split(' ');
-    if (words.length > wordLimit) {
-      return words.slice(0, wordLimit).join(' ') + '...';
-    }
-    return text;
+    return words.length > wordLimit ? words.slice(0, wordLimit).join(' ') + '...' : text;
   };
 
   return (
-    <div className="d-flex align-items-stretch">
-      <div className="card h-100 shadow-sm">
-        <div className="card-body d-flex flex-column">
-          <h5 className="card-title">{job.title}</h5>
-          <p className="card-text text-truncate overflow-hidden" style={{ maxHeight: '4.5em' }}>
+    <div className="w-full max-w-md p-4">
+      <div className="bg-card text-card-foreground border border-border rounded-lg shadow-md hover:-translate-y-1 transition-transform duration-200">
+        <div className="p-5 flex flex-col h-full">
+          <h5 className="text-xl font-semibold mb-3 text-foreground">{job.title}</h5>
+          <p className="text-muted-foreground mb-4 overflow-hidden text-ellipsis" style={{ maxHeight: '4.5em' }}>
             {truncateText(job.description, 100)}
           </p>
-          <div className="mt-auto">
-            <button className="btn btn-primary w-100" onClick={() => setShowModal(true)}>
-              View Details
-            </button>
-          </div>
+          <button
+            className="mt-auto w-full bg-primary text-primary-foreground py-2 rounded-md hover:bg-opacity-90 transition"
+            onClick={() => setShowModal(true)}
+          >
+            View Details
+          </button>
         </div>
       </div>
 
       {showModal && (
-        <div className="modal-overlay" role="dialog">
-          <div className="modal-container">
-            <div className="modal-header">
-              <h5 className="modal-title">{job.title}</h5>
-              <button type="button" className="close" onClick={() => setShowModal(false)}>
-                <span>&times;</span>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-card text-card-foreground rounded-lg shadow-lg max-w-lg w-full">
+            <div className="flex justify-between items-center border-b border-border px-6 py-4">
+              <h3 className="text-lg font-semibold">{job.title}</h3>
+              <button
+                className="text-2xl font-bold text-muted-foreground hover:text-foreground"
+                onClick={() => setShowModal(false)}
+              >
+                &times;
               </button>
             </div>
-            <div className="modal-body">
+            <div className="px-6 py-4 space-y-3">
               <p><strong>Description:</strong> {job.description}</p>
               <p><strong>Skills Required:</strong> {job.skills}</p>
             </div>
-            <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>
+            <div className="flex justify-end gap-4 border-t border-border px-6 py-4">
+              <button
+                className="bg-secondary text-secondary-foreground py-2 px-4 rounded hover:bg-muted transition"
+                onClick={() => setShowModal(false)}
+              >
                 Close
               </button>
               <button
-                type="button"
-                className="btn btn-primary"
+                className="bg-primary text-primary-foreground py-2 px-4 rounded hover:bg-opacity-90 transition"
                 onClick={handleApply}
                 disabled={loading || status === 'loading'}
               >
