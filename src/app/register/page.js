@@ -29,7 +29,7 @@ export default function Register() {
   useEffect(() => {
     const stored = localStorage.getItem('theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    setIsVerificationStage(true);
+    
     if (stored === 'dark' || (!stored && prefersDark)) {
       document.documentElement.classList.add('dark');
       setIsDark(true);
