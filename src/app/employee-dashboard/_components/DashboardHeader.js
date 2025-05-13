@@ -23,7 +23,7 @@ export default function DashboardHeader() {
       <div className="flex items-center gap-4">
         <ThemeToggle />
         <button
-          onClick={() => router.push('/employee-dashboard/profile')}
+          onClick={() => router.push('/employee-dashboard/employee-profile')}
           className="w-9 h-9 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center hover:bg-indigo-700"
           aria-label="Go to profile"
         >
