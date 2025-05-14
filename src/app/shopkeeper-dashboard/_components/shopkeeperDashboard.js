@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import ViewApplicants from './ViewApplicants';
 import ShopkeeperSidebar from './ShopkeeperSidebar';
-
+import ThemeToggle from '../../components/ThemeToggle';
 const ShopkeeperDashboard = () => {
     const { data: session, status } = useSession();
     const router = useRouter();
@@ -188,18 +188,21 @@ const ShopkeeperDashboard = () => {
                     />
                 ) : (
                     <div className="p-6">
-                        <h1 className="text-3xl font-bold  mb-6">Dashboard</h1>
+                        <div className="flex justify-between items-center mb-6">
+                            <h1 className="text-3xl font-bold">Dashboard</h1>
+                            <ThemeToggle />
+                        </div>
                         
                         {/* Session status indicator (for testing) */}
-                        <div className="mb-6 p-3 rounded   text-sm">
+                        <div className="mb-6 p-3 rounded text-sm">
                             <span>Session active: {status === 'authenticated' ? 'Yes' : 'No'}</span>
                             <span className="ml-4">Session expires in: {session?.expires ? new Date(session.expires).toLocaleTimeString() : 'N/A'}</span>
                         </div>
 
                         <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
-                            <h2 className="text-xl font-semibold  mb-3 md:mb-0">Total Job Postings: {jobPostings.length}</h2>
+                            <h2 className="text-xl font-semibold mb-3 md:mb-0">Total Job Postings: {jobPostings.length}</h2>
                             <div className="flex items-center">
-                                <label className=" mr-2">Filter By: </label>
+                                <label className="mr-2">Filter By: </label>
                                 <select 
                                     onChange={(e) => setFilter(e.target.value)} 
                                     className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
@@ -214,20 +217,20 @@ const ShopkeeperDashboard = () => {
 
                         <div className="space-y-3">
                             {loading ? (
-                                <p >Loading job postings...</p>
+                                <p>Loading job postings...</p>
                             ) : filteredJobs.length > 0 ? (
                                 filteredJobs.map((job) => (
                                     <div 
                                         key={job.job_posting_id} 
                                         className="flex flex-col md:flex-row md:justify-between md:items-center p-4 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow"
                                     >
-                                        <div className="font-medium text-lg  mb-2 md:mb-0">{job.job_title}</div>
-                                        <div className=" mb-2 md:mb-0 md:mx-4">
+                                        <div className="font-medium text-lg mb-2 md:mb-0">{job.job_title}</div>
+                                        <div className="mb-2 md:mb-0 md:mx-4">
                                             <div>Due Date: {job.due_date}</div>
                                             <div>Applicants: {job.applicants.length}</div>
                                         </div>
                                         <button 
-                                            className="px-4 py-2 bg-primary  rounded hover:bg-primary/90 transition-colors"
+                                            className="px-4 py-2 bg-primary rounded hover:bg-primary/90 transition-colors"
                                             onClick={() => handleViewApplicants(job)}
                                         >
                                             View Applicants
@@ -235,24 +238,24 @@ const ShopkeeperDashboard = () => {
                                     </div>
                                 ))
                             ) : (
-                                <p >No job postings found.</p>
+                                <p>No job postings found.</p>
                             )}
                         </div>
 
                         {/* Section to display reviews */}
                         <div className="mt-8">
-                            <h3 className="text-xl font-semibold  mb-4">Reviews from Labours</h3>
+                            <h3 className="text-xl font-semibold mb-4">Reviews from Labours</h3>
                             {reviews.length > 0 ? (
                                 <ul className="space-y-3">
                                     {reviews.map((review) => (
-                                        <li key={review.id} className="border border-gray-200 rounded-lg p-4 ">
+                                        <li key={review.id} className="border border-gray-200 rounded-lg p-4">
                                             <div className="font-medium mb-2">Rating: {review.rating}</div>
-                                            <p >{review.review}</p>
+                                            <p>{review.review}</p>
                                         </li>
                                     ))}
                                 </ul>
                             ) : (
-                                <p >No reviews available.</p>
+                                <p>No reviews available.</p>
                             )}
                         </div>
                     </div>
