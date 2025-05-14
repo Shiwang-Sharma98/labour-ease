@@ -151,8 +151,8 @@ const ShopkeeperDashboard = () => {
     // If there's an authentication error, show error message
     if (authError) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-gray-100">
-                <div className="bg-white p-6 rounded-lg shadow-md max-w-md w-full">
+            <div className="flex items-center justify-center min-h-screen ">
+                <div className=" p-6 rounded-lg shadow-md max-w-md w-full">
                     <h2 className="text-2xl font-bold text-red-600 mb-4">Authentication Error</h2>
                     <p className="mb-4 text-gray-700">{authError}</p>
                     <p className="text-gray-500">Redirecting...</p>
@@ -175,7 +175,7 @@ const ShopkeeperDashboard = () => {
     };
 
     return (
-        <div className="flex min-h-screen bg-gray-50">
+        <div className="flex min-h-screen ">
             <ShopkeeperSidebar />
             
             <div className={`flex-1 transition-all duration-300 ${sidebarCollapsed ? 'ml-[70px]' : 'ml-[250px]'} md:ml-[250px]`}>
@@ -188,18 +188,18 @@ const ShopkeeperDashboard = () => {
                     />
                 ) : (
                     <div className="p-6">
-                        <h1 className="text-3xl font-bold text-gray-800 mb-6">Dashboard</h1>
+                        <h1 className="text-3xl font-bold  mb-6">Dashboard</h1>
                         
                         {/* Session status indicator (for testing) */}
-                        <div className="mb-6 p-3 rounded bg-gray-100 text-gray-600 text-sm">
+                        <div className="mb-6 p-3 rounded   text-sm">
                             <span>Session active: {status === 'authenticated' ? 'Yes' : 'No'}</span>
                             <span className="ml-4">Session expires in: {session?.expires ? new Date(session.expires).toLocaleTimeString() : 'N/A'}</span>
                         </div>
 
                         <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
-                            <h2 className="text-xl font-semibold text-gray-700 mb-3 md:mb-0">Total Job Postings: {jobPostings.length}</h2>
+                            <h2 className="text-xl font-semibold  mb-3 md:mb-0">Total Job Postings: {jobPostings.length}</h2>
                             <div className="flex items-center">
-                                <label className="text-gray-600 mr-2">Filter By: </label>
+                                <label className=" mr-2">Filter By: </label>
                                 <select 
                                     onChange={(e) => setFilter(e.target.value)} 
                                     className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
@@ -214,20 +214,20 @@ const ShopkeeperDashboard = () => {
 
                         <div className="space-y-3">
                             {loading ? (
-                                <p className="text-gray-600">Loading job postings...</p>
+                                <p >Loading job postings...</p>
                             ) : filteredJobs.length > 0 ? (
                                 filteredJobs.map((job) => (
                                     <div 
                                         key={job.job_posting_id} 
-                                        className="flex flex-col md:flex-row md:justify-between md:items-center p-4 border border-gray-200 rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow"
+                                        className="flex flex-col md:flex-row md:justify-between md:items-center p-4 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow"
                                     >
-                                        <div className="font-medium text-lg text-gray-800 mb-2 md:mb-0">{job.job_title}</div>
-                                        <div className="text-gray-600 mb-2 md:mb-0 md:mx-4">
+                                        <div className="font-medium text-lg  mb-2 md:mb-0">{job.job_title}</div>
+                                        <div className=" mb-2 md:mb-0 md:mx-4">
                                             <div>Due Date: {job.due_date}</div>
                                             <div>Applicants: {job.applicants.length}</div>
                                         </div>
                                         <button 
-                                            className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 transition-colors"
+                                            className="px-4 py-2 bg-primary  rounded hover:bg-primary/90 transition-colors"
                                             onClick={() => handleViewApplicants(job)}
                                         >
                                             View Applicants
@@ -235,24 +235,24 @@ const ShopkeeperDashboard = () => {
                                     </div>
                                 ))
                             ) : (
-                                <p className="text-gray-600">No job postings found.</p>
+                                <p >No job postings found.</p>
                             )}
                         </div>
 
                         {/* Section to display reviews */}
                         <div className="mt-8">
-                            <h3 className="text-xl font-semibold text-gray-700 mb-4">Reviews from Labours</h3>
+                            <h3 className="text-xl font-semibold  mb-4">Reviews from Labours</h3>
                             {reviews.length > 0 ? (
                                 <ul className="space-y-3">
                                     {reviews.map((review) => (
-                                        <li key={review.id} className="border border-gray-200 rounded-lg p-4 bg-white">
+                                        <li key={review.id} className="border border-gray-200 rounded-lg p-4 ">
                                             <div className="font-medium mb-2">Rating: {review.rating}</div>
-                                            <p className="text-gray-600">{review.review}</p>
+                                            <p >{review.review}</p>
                                         </li>
                                     ))}
                                 </ul>
                             ) : (
-                                <p className="text-gray-600">No reviews available.</p>
+                                <p >No reviews available.</p>
                             )}
                         </div>
                     </div>
