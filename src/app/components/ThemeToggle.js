@@ -7,30 +7,34 @@ export default function ThemeToggle() {
   const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
 
-  // Wait for component to mount to avoid hydration mismatch
   useEffect(() => setMounted(true), []);
 
   if (!mounted) return null;
 
+  const isDark = theme === 'dark';
+
   return (
     <button
-      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-      className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+      onClick={() => setTheme(isDark ? 'light' : 'dark')}
+      aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+      className="relative w-8 h-8 flex items-center justify-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
       style={{
-        backgroundColor: theme === 'dark' ? '#4B5563' : '#D1D5DB',
+        backgroundColor: 'transparent',
       }}
-      aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
     >
-      <span className="sr-only">Toggle theme</span>
-      <span
-        className={`${
-          theme === 'dark' ? 'translate-x-6' : 'translate-x-1'
-        } inline-block h-4 w-4 transform rounded-full bg-white transition`}
+      {/* Outer light circle */}
+      <div className="w-6 h-6 rounded-full bg-white dark:bg-gray-300 absolute z-10" />
+
+      {/* Inner dark overlay for crescent effect */}
+      <div
+        className={`w-6 h-6 rounded-full bg-black absolute z-20 transition-transform duration-300 ${
+          isDark ? 'translate-x-1 translate-y-1' : '-translate-x-1 -translate-y-1'
+        }`}
       />
-      <span className="absolute inset-0 flex items-center justify-start pl-1 dark:justify-end dark:pr-1">
-        <span className="h-3 w-3 text-xs">
-          {theme === 'dark' ? '🌙' : '☀️'}
-        </span>
+
+      {/* Optional emoji overlay for fun */}
+      <span className="absolute text-xs">
+        {isDark ? '🌙' : '☀️'}
       </span>
     </button>
   );

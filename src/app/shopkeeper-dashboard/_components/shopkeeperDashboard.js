@@ -1,64 +1,71 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import ViewApplicants from './ViewApplicants';
-import './shopkeeperDashboard.css';
-import ShopkeeperNavbar from '@/app/ShopkeeperNavbar/ShopkeeperNavbar';
-
+import ShopkeeperSidebar from './ShopkeeperSidebar';
+import ThemeToggle from '../../components/ThemeToggle';
 const ShopkeeperDashboard = () => {
-    const searchParams = useSearchParams();
-    const userID = searchParams.get('userID');
+    const { data: session, status } = useSession();
     const router = useRouter();
 
     const [jobPostings, setJobPostings] = useState([]);
-    const [reviews, setReviews] = useState([]); // State for shopkeeper reviews
-    const [loading, setLoading] = useState(false);
+    const [reviews, setReviews] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [shopkeeperId, setShopkeeperId] = useState('');
     const [filter, setFilter] = useState("all");
-    const [viewApplicants, setViewApplicants] = useState(null); // State for selected applicants and job posting ID
+    const [viewApplicants, setViewApplicants] = useState(null);
+    const [authError, setAuthError] = useState(null);
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
     useEffect(() => {
-        const verifyToken = async () => {
-          const token = localStorage.getItem("authToken");
-    
-          if (!token) {
-            router.push("/login");
-            return;
-          }
-    
-          try {
-            const response = await fetch("/api/verifyToken", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ token }),
-            });
-    
-            if (!response.ok) {
-              router.push("/login");
+        // Check authentication and role
+        const verifyAuth = async () => {
+            // If still loading session, wait
+            if (status === 'loading') return;
+
+            // If not authenticated, redirect to login
+            if (status === 'unauthenticated') {
+                toast.error("Session expired. Please log in again.");
+                router.push('/login');
+                return;
             }
-          } catch (error) {
-            console.error("Token verification failed:", error);
-            router.push("/login");
-          }
+
+            // Verify user role via API
+            try {
+                const response = await fetch('/api/user');
+                const userData = await response.json();
+                
+                // Check if user is a shopkeeper
+                if (userData.role !== 'shopkeeper') {
+                    setAuthError("Access denied. Only shopkeepers can access this page.");
+                    toast.error("Access denied. Only shopkeepers can access this page.");
+                    setTimeout(() => router.push('/dashboard'), 2000);
+                    return;
+                }
+                
+                // Use ID from session/API instead of URL parameter for security
+                const verifiedUserId = userData.id;
+                setShopkeeperId(verifiedUserId);
+                
+                // Load data using verified ID
+                fetchJobPostingsAndApplicants(verifiedUserId);
+                fetchShopkeeperReviews(verifiedUserId);
+            } catch (error) {
+                console.error("Authentication verification error:", error);
+                setAuthError("Failed to verify authentication. Please try again.");
+                toast.error("Authentication error. Please log in again.");
+                setTimeout(() => router.push('/login'), 2000);
+            }
         };
-    
-        verifyToken();
-      }, [router]);
-    useEffect(() => {
-        const storedShopkeeperId = searchParams.get('userID');
-        if (storedShopkeeperId && storedShopkeeperId !== shopkeeperId) {
-            setShopkeeperId(storedShopkeeperId);
-            fetchJobPostingsAndApplicants(storedShopkeeperId);
-            fetchShopkeeperReviews(storedShopkeeperId); // Fetch reviews
-        }
-    }, [searchParams, shopkeeperId]);
+        
+        verifyAuth();
+    }, [status, router]);
 
     const fetchJobPostingsAndApplicants = async (id) => {
         setLoading(true);
-        const toastId = toast.loading('Fetching data...');
+        const toastId = toast.loading('Fetching job postings...');
 
         try {
             const response = await fetch('/api/listLabours', {
@@ -79,14 +86,14 @@ const ShopkeeperDashboard = () => {
                 toast.error(`Failed to fetch data. Error: ${errorData.message || 'Unknown error'}`);
             }
         } catch (error) {
-            toast.error('An error occurred. Please try again later.');
+            toast.error('An error occurred while fetching job postings. Please try again later.');
+            console.error("Job postings fetch error:", error);
         } finally {
             setLoading(false);
             toast.dismiss(toastId);
         }
     };
 
-    // New function to fetch reviews for the shopkeeper
     const fetchShopkeeperReviews = async (shopkeeperId) => {
         try {
             const response = await fetch('/api/shopkeeper-reviews', {
@@ -100,18 +107,15 @@ const ShopkeeperDashboard = () => {
             const data = await response.json();
     
             if (response.ok) {
-                console.log('Reviews:', data.reviews);
-                setReviews(data.reviews); // Update the reviews state here
+                setReviews(data.reviews);
             } else {
-                console.error(data.message);
+                console.error("Reviews fetch error:", data.message);
+                toast.error("Failed to load reviews");
             }
         } catch (error) {
             console.error("Error fetching reviews:", error);
         }
     };
-    
-    
-    
 
     // Handle viewing applicants for a job posting
     const handleViewApplicants = (job) => {
@@ -119,9 +123,8 @@ const ShopkeeperDashboard = () => {
     };
 
     const handleBackToJobs = () => {
-        setViewApplicants(null); // Go back to job postings
+        setViewApplicants(null);
     };
-
     
     const getDateDifferenceInDays = (dueDate) => {
         const currentDate = new Date();
@@ -145,25 +148,65 @@ const ShopkeeperDashboard = () => {
         return true;
     });
 
-    return (
-        <>
-            {viewApplicants ? (
-                <ViewApplicants 
-                    applicants={viewApplicants.applicants} 
-                    onBack={handleBackToJobs} 
-                    jobPostingId={viewApplicants.jobPostingId} 
-                    shopkeeperId={userID} 
-                />
-            ) : (
-                <>
-                    <ShopkeeperNavbar/>
+    // If there's an authentication error, show error message
+    if (authError) {
+        return (
+            <div className="flex items-center justify-center min-h-screen ">
+                <div className=" p-6 rounded-lg shadow-md max-w-md w-full">
+                    <h2 className="text-2xl font-bold text-red-600 mb-4">Authentication Error</h2>
+                    <p className="mb-4 text-gray-700">{authError}</p>
+                    <p className="text-gray-500">Redirecting...</p>
+                </div>
+            </div>
+        );
+    }
 
-                    <div className="container mt-4">
-                        <div className="dashboard-header d-flex justify-content-between align-items-center mb-3">
-                            <h2>Total Job Postings: {jobPostings.length}</h2>
-                            <div className="filter">
-                                <label>Filter By: </label>
-                                <select onChange={(e) => setFilter(e.target.value)} className="ms-2">
+    // Show loading state while checking authentication
+    if (status === 'loading') {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <p className="text-lg text-gray-600">Verifying your session...</p>
+            </div>
+        );
+    }
+
+    const handleSidebarToggle = () => {
+        setSidebarCollapsed(!sidebarCollapsed);
+    };
+
+    return (
+        <div className="flex min-h-screen ">
+            <ShopkeeperSidebar />
+            
+            <div className={`flex-1 transition-all duration-300 ${sidebarCollapsed ? 'ml-[70px]' : 'ml-[250px]'} md:ml-[250px]`}>
+                {viewApplicants ? (
+                    <ViewApplicants 
+                        applicants={viewApplicants.applicants} 
+                        onBack={handleBackToJobs} 
+                        jobPostingId={viewApplicants.jobPostingId} 
+                        shopkeeperId={shopkeeperId} 
+                    />
+                ) : (
+                    <div className="p-6">
+                        <div className="flex justify-between items-center mb-6">
+                            <h1 className="text-3xl font-bold">Dashboard</h1>
+                            <ThemeToggle />
+                        </div>
+                        
+                        {/* Session status indicator (for testing) */}
+                        <div className="mb-6 p-3 rounded text-sm">
+                            <span>Session active: {status === 'authenticated' ? 'Yes' : 'No'}</span>
+                            <span className="ml-4">Session expires in: {session?.expires ? new Date(session.expires).toLocaleTimeString() : 'N/A'}</span>
+                        </div>
+
+                        <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
+                            <h2 className="text-xl font-semibold mb-3 md:mb-0">Total Job Postings: {jobPostings.length}</h2>
+                            <div className="flex items-center">
+                                <label className="mr-2">Filter By: </label>
+                                <select 
+                                    onChange={(e) => setFilter(e.target.value)} 
+                                    className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                                >
                                     <option value="all">All Posts</option>
                                     <option value="new">New</option>
                                     <option value="old">Old</option>
@@ -172,25 +215,26 @@ const ShopkeeperDashboard = () => {
                             </div>
                         </div>
 
-                        <div className="job-cards">
+                        <div className="space-y-3">
                             {loading ? (
                                 <p>Loading job postings...</p>
                             ) : filteredJobs.length > 0 ? (
                                 filteredJobs.map((job) => (
-                                    <div key={job.job_posting_id} className="job-card d-flex justify-content-between align-items-center p-3 mb-2 border rounded">
-                                        <div className="job-name">{job.job_title}</div>
-                                        <div className="job-details">
+                                    <div 
+                                        key={job.job_posting_id} 
+                                        className="flex flex-col md:flex-row md:justify-between md:items-center p-4 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                                    >
+                                        <div className="font-medium text-lg mb-2 md:mb-0">{job.job_title}</div>
+                                        <div className="mb-2 md:mb-0 md:mx-4">
                                             <div>Due Date: {job.due_date}</div>
                                             <div>Applicants: {job.applicants.length}</div>
                                         </div>
-                                        <div className="view-button">
-                                            <button 
-                                                className="btn btn-primary" 
-                                                onClick={() => handleViewApplicants(job)}
-                                            >
-                                                View Applicants
-                                            </button>
-                                        </div>
+                                        <button 
+                                            className="px-4 py-2 bg-primary rounded hover:bg-primary/90 transition-colors"
+                                            onClick={() => handleViewApplicants(job)}
+                                        >
+                                            View Applicants
+                                        </button>
                                     </div>
                                 ))
                             ) : (
@@ -199,26 +243,25 @@ const ShopkeeperDashboard = () => {
                         </div>
 
                         {/* Section to display reviews */}
-                        <div className="reviews-section mt-4">
-                            <h3>Reviews from Labours</h3>
+                        <div className="mt-8">
+                            <h3 className="text-xl font-semibold mb-4">Reviews from Labours</h3>
                             {reviews.length > 0 ? (
-    <ul className="list-group">
-        {reviews.map((review) => (
-            <li key={review.id} className="list-group-item">
-                <strong>Rating: {review.rating}</strong>
-                <p>{review.review}</p>
-            </li>
-        ))}
-    </ul>
-) : (
-    <p>No reviews available.</p>
-)}
-
+                                <ul className="space-y-3">
+                                    {reviews.map((review) => (
+                                        <li key={review.id} className="border border-gray-200 rounded-lg p-4">
+                                            <div className="font-medium mb-2">Rating: {review.rating}</div>
+                                            <p>{review.review}</p>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p>No reviews available.</p>
+                            )}
                         </div>
                     </div>
-                </>
-            )}
-        </>
+                )}
+            </div>
+        </div>
     );
 };
 

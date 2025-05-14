@@ -1,187 +1,151 @@
-"use client";
-import React, { useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import "./employeeDashboard.css";
-import EmployeeNavbar from "@/app/employee-navbar/EmployeeNavbar";
+'use client';
 
-const EmpDashboardPage = () => {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const userID = searchParams.get("userID");
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [shopkeepers, setShopkeepers] = useState([]);
-  const [reviews, setReviews] = useState([]);
+import React, { useState, useEffect } from 'react';
+import Sidebar from './EmployeeNavbar';
+import DashboardHeader from './DashboardHeader';
+import { useSession } from 'next-auth/react';
 
-  // Verify token on component mount
+const Dashboard = () => {
+  const { data: session } = useSession();
+  const name = session?.user?.name || 'User';
+
+
+  const [jobAlertCount, setJobAlertCount] = useState(0);
   useEffect(() => {
-    const verifyToken = async () => {
-      const token = localStorage.getItem("authToken");
-
-      if (!token) {
-        router.push("/login");
-        return;
-      }
+    async function fetchJobAlerts() {
+      if (!session?.user?.id) return;
 
       try {
-        const response = await fetch("/api/verifyToken", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ token }),
-        });
-
-        if (!response.ok) {
-          router.push("/login");
-        }
-      } catch (error) {
-        console.error("Token verification failed:", error);
-        router.push("/login");
+        const res = await fetch(`/api/currentOpenings?shopkeeper_id=${session.user.id}`);
+        const data = await res.json();
+        setJobAlertCount(data.total);
+      } catch (err) {
+        console.error('Failed to fetch job alerts:', err);
       }
-    };
-
-    verifyToken();
-  }, [router]);
-
-  // Fetch employee data
-  useEffect(() => {
-    const fetchEmployeeData = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch(`/api/updateLabour?id=${userID}`);
-        if (response.ok) {
-          const data = await response.json();
-          setProfile(data);
-        } else {
-          console.error("Failed to fetch employee data");
-        }
-      } catch (error) {
-        console.error("Error fetching employee data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (userID) {
-      fetchEmployeeData();
-    } else {
-      console.error("No userID provided");
     }
-  }, [userID]);
 
-    const handleReviewChange = (shopkeeperId, field, value) => {
-    setReviews((prevReviews) =>
-      prevReviews.map((review) =>
-        review.id === shopkeeperId ? { ...review, [field]: value } : review
-      )
-    );
-  };
-
-  const handleReviewSubmit = async (shopkeeperId) => {
-    const currentReview = reviews.find((review) => review.id === shopkeeperId);
-    if (!currentReview) return;
-
-    try {
-      const response = await fetch("/api/submitReview", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          shopkeeperId,
-          labourId: userID,
-          rating: currentReview.rating,
-          review: currentReview.review,
-        }),
-      });
-
-      if (response.ok) {
-        alert("Review submitted successfully!");
-        handleReviewChange(shopkeeperId, "rating", 0);
-        handleReviewChange(shopkeeperId, "review", "");
-      } else {
-        console.error("Failed to submit review");
-      }
-    } catch (error) {
-      console.error("Error submitting review:", error);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="dashboard-spinner-container">
-        <div className="loader"></div>
-      </div>
-    );
-  }
-
-  if (!profile) {
-    return <div>No profile data available.</div>;
-  }
+    fetchJobAlerts();
+  }, [session]);
 
   return (
-    <>
-    
-    <EmployeeNavbar/>
-      <div className="dashboard-container">
-        <h1 className="dashboard-welcome">Welcome {profile.name}</h1>
-        <div className="dashboard-shopkeepers">
-          <h2>Rate and Review Shopkeepers</h2>
-          {shopkeepers.length === 0 ? (
-            <p>No shopkeepers available.</p>
-          ) : (
-            <ul>
-              {shopkeepers.map((shopkeeper) => (
-                <li key={shopkeeper.id}>
-                  <h3>{shopkeeper.shop_name}</h3>
-                  <div>
-                    <label className="dashboard-form-label">
-                      Rating (1-5):
-                    </label>
-                    <input
-                      className="dashboard-form-input"
-                      type="number"
-                      value={
-                        reviews.find((review) => review.id === shopkeeper.id)
-                          ?.rating || 0
-                      }
-                      onChange={(e) =>
-                        handleReviewChange(
-                          shopkeeper.id,
-                          "rating",
-                          Number(e.target.value)
-                        )
-                      }
-                      min="1"
-                      max="5"
-                    />
-                  </div>
-                  <div>
-                    <label className="dashboard-form-label">Review:</label>
-                    <textarea
-                      className="dashboard-form-textarea"
-                      value={
-                        reviews.find((review) => review.id === shopkeeper.id)
-                          ?.review || ""
-                      }
-                      onChange={(e) =>
-                        handleReviewChange(shopkeeper.id, "review", e.target.value)
-                      }
-                    />
-                  </div>
-                  <button
-                    className="dashboard-btn"
-                    onClick={() => handleReviewSubmit(shopkeeper.id)}
-                  >
-                    Submit Review
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
+    <div className="flex bg-[rgb(var(--background))] text-[rgb(var(--foreground))] min-h-screen transition-colors">
+      <Sidebar />
+      <div className="flex-1 ml-16 sm:ml-64">
+        <DashboardHeader />
+
+        <div className="p-6">
+          {/* Greeting */}
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold">👋 {name}</h1>
+            <p className="text-muted-foreground">Here is your daily activities and job alerts</p>
+          </div>
+
+          {/* Stats Boxes */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            <div className="bg-muted text-[rgb(var(--foreground))] p-6 rounded-xl">
+              <h3 className="text-3xl font-bold">34</h3>
+              <p className="text-sm text-muted-foreground mt-1">Applied Jobs</p>
+            </div>
+            
+            <div className="bg-muted text-[rgb(var(--foreground))] p-6 rounded-xl">
+              <h3 className="text-3xl font-bold">{jobAlertCount}</h3>
+              <p className="text-sm text-muted-foreground mt-1">Job Alerts</p>
+            </div>
+          </div>
+
+          
+
+          {/* Recently Applied */}
+          <div className="bg-[rgb(var(--card))] text-[rgb(var(--foreground))] p-6 rounded-xl shadow-md">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">Recently Applied</h2>
+              <button className="text-sm text-primary hover:underline">View All</button>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead>
+                  <tr className="text-muted-foreground border-b">
+                    <th className="py-2 px-4">Jobs</th>
+                    <th className="py-2 px-4">Date Applied</th>
+                    <th className="py-2 px-4">Status</th>
+                    <th className="py-2 px-4">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    {
+                      company: 'Google',
+                      title: 'Network Engineer',
+                      tag: 'Remote',
+                      location: 'Washington, USA',
+                      salary: '$107k-170k/month',
+                      date: 'Feb 5, 2024 19:28',
+                      status: 'Active'
+                    },
+                    {
+                      company: 'Dribbble',
+                      title: 'UX Designer',
+                      tag: 'Contract Base',
+                      location: 'Chandigarh, India',
+                      salary: '$107k-170k/month',
+                      date: 'Jan 13, 2024 03:33',
+                      status: 'Active'
+                    },
+                    {
+                      company: 'Facebook',
+                      title: 'User Researcher',
+                      tag: 'Temporary',
+                      location: 'London, UK',
+                      salary: '$120k-185k/month',
+                      date: 'Mar 5, 2024 09:23',
+                      status: 'Active'
+                    },
+                    {
+                      company: 'Google',
+                      title: 'Software Engineer',
+                      tag: 'Remote',
+                      location: 'Mumbai, India',
+                      salary: '$134k-185k/month',
+                      date: 'Mar 9, 2024 12:45',
+                      status: 'Active'
+                    },
+                    {
+                      company: 'Facebook',
+                      title: 'Network Engineer',
+                      tag: 'Contract Base',
+                      location: 'Washington, USA',
+                      salary: '$134k-210k/month',
+                      date: 'Apr 12, 2024 04:28',
+                      status: 'Active'
+                    },
+                  ].map((job, index) => (
+                    <tr key={index} className="border-b hover:bg-muted/60">
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          
+                          <div>
+                            <div className="font-semibold">{job.title}</div>
+                            <div className="text-muted-foreground text-xs">{job.location}</div>
+                            <span className="bg-muted text-muted-foreground text-xs px-2 py-0.5 rounded-md inline-block mt-1">{job.tag}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">{job.date}</td>
+                      <td className="py-3 px-4 text-green-600 font-medium">{job.status}</td>
+                      <td className="py-3 px-4">
+                        <button className="text-primary hover:underline">View Details</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
-export default EmpDashboardPage;
+export default Dashboard;

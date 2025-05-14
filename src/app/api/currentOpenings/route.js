@@ -19,9 +19,15 @@ from job_postings  WHERE shopkeeper_id = ${shopkeeperId}   `;
 from job_postings  WHERE shopkeeper_id = ${shopkeeperId}   `;
     // console.log("Query result:", res.rows);
 
+    const countResult = await sql`
+      SELECT COUNT(*)::int as total
+      FROM job_postings
+      WHERE shopkeeper_id = ${shopkeeperId}
+    `;
+
     
     return new Response(
-      JSON.stringify({ jobs: result.rows }),
+      JSON.stringify({ jobs: result.rows , total: countResult.rows[0].total}),
       { status: 200 }
     );
   } catch (error) {
