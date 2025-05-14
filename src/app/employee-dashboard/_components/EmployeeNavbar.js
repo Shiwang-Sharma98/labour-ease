@@ -48,10 +48,7 @@ const Sidebar = () => {
           <Home className="w-5 h-5" />
           <span className={`ml-3 ${isOpen ? 'block' : 'hidden'} sm:block`}>Overview</span>
         </Link>
-        <Link href="/applied-jobs" className="flex items-center p-4 hover:bg-muted rounded-md">
-          <Briefcase className="w-5 h-5" />
-          <span className={`ml-3 ${isOpen ? 'block' : 'hidden'} sm:block`}>Applied Jobs</span>
-        </Link>
+        
         <Link href="/employee-dashboard/employee-apply" className="flex items-center p-4 hover:bg-muted rounded-md">
           <Bell className="w-5 h-5" />
           <span className={`ml-3 ${isOpen ? 'block' : 'hidden'} sm:block`}>Job Alerts</span>

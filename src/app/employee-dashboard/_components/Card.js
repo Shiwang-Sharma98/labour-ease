@@ -1,10 +1,11 @@
 'use client';
+
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
-export default function Card({ job }) {
+export default function Card({ job, viewMode }) {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const { data: session, status } = useSession();
@@ -78,15 +79,26 @@ export default function Card({ job }) {
   };
 
   return (
-    <div className="w-full max-w-md p-4">
-      <div className="bg-card text-card-foreground border border-border rounded-lg shadow-md hover:-translate-y-1 transition-transform duration-200">
-        <div className="p-5 flex flex-col h-full">
+    <div
+      className={`w-full ${viewMode === 'list' ? 'p-3' : 'max-w-md p-4'}`}
+    >
+      <div
+        className={`bg-card text-card-foreground border border-border rounded-lg shadow-md transition-transform duration-200 hover:-translate-y-1 ${
+          viewMode === 'list' ? 'flex flex-col md:flex-row md:items-start md:justify-between p-5' : 'p-5 flex flex-col h-full'
+        }`}
+      >
+        <div className="flex-1">
           <h5 className="text-xl font-semibold mb-3 text-foreground">{job.title}</h5>
-          <p className="text-muted-foreground mb-4 overflow-hidden text-ellipsis" style={{ maxHeight: '4.5em' }}>
+          <p
+            className="text-muted-foreground mb-4 overflow-hidden text-ellipsis"
+            style={{ maxHeight: '4.5em' }}
+          >
             {truncateText(job.description, 100)}
           </p>
+        </div>
+        <div className={`${viewMode === 'list' ? 'md:ml-6 mt-4 md:mt-0 w-full md:w-auto' : 'mt-auto'}`}>
           <button
-            className="mt-auto w-full bg-primary text-primary-foreground py-2 rounded-md hover:bg-opacity-90 transition"
+            className="w-full bg-primary text-primary-foreground py-2 m-3 rounded-md hover:bg-opacity-90 transition"
             onClick={() => setShowModal(true)}
           >
             View Details

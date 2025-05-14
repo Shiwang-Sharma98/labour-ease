@@ -3,13 +3,14 @@
 import React, { useEffect, useState } from 'react';
 import Card from '../_components/Card';
 import toast from 'react-hot-toast';
-import Link from 'next/link'; // ✅ Import for client-side navigation
+import Sidebar from './EmployeeNavbar';
 
 const JobData = () => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredJobs, setFilteredJobs] = useState([]);
+  const [viewMode, setViewMode] = useState('list');
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -51,41 +52,54 @@ const JobData = () => {
 
   return (
     <>
-      {/* 🔙 Back to Dashboard Link */}
-      <div className="max-w-7xl mx-auto px-6 py-4">
-        <Link href="/employee-dashboard" className="text-blue-500 hover:underline flex items-center gap-1">
-          <span className="text-xl">←</span> Back to Employee Dashboard
-        </Link>
-      </div>
-
+      <Sidebar />
       <div className="max-w-7xl mx-auto p-6 bg-muted rounded-lg shadow-lg">
         <h2 className="text-2xl font-semibold text-center text-foreground mb-6 font-poppins">
           Available Job Postings
         </h2>
 
-        {/* Search Bar */}
-        <div className="mb-6 text-center">
+        {/* Search Bar at the top */}
+        <div className="mb-6">
           <input
             type="text"
             placeholder="Search by job title or skills..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full max-w-md px-4 py-2 border border-input rounded-md shadow-sm bg-muted text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-full px-4 py-2 border border-input rounded-md bg-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
           />
-
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* View Mode Toggle */}
+        <div className="flex justify-end mb-4">
+          <button
+            onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+            className="px-4 py-2 bg-primary text-white rounded-md shadow hover:bg-primary/90 transition"
+          >
+            Switch to {viewMode === 'grid' ? 'List' : 'Grid'} View
+          </button>
+        </div>
+
+        {/* Job Listings */}
+        <div
+          className={`${
+            viewMode === 'grid'
+              ? 'grid grid-cols-1 md:grid-cols-2 '
+              : 'flex flex-col gap-4'
+          }`}
+        >
           {filteredJobs.length > 0 ? (
             filteredJobs.map((job) => (
-              <Card key={job.id || `${job.title}-${job.postedAt}`} job={job} />
+              <Card
+                key={job.id || `${job.title}-${job.postedAt}`}
+                job={job}
+                viewMode={viewMode}
+              />
             ))
           ) : (
-            <p className="col-span-full text-center text-muted-foreground text-lg">
+            <p className="text-center text-muted-foreground text-lg col-span-full">
               No job postings available
             </p>
           )}
-
         </div>
       </div>
     </>
