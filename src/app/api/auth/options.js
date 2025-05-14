@@ -93,11 +93,11 @@ export const authOptions = {
   },
   session: {
     strategy: 'jwt',
-    maxAge: 120 * 60, // 1 hour in seconds (not 2 minutes)
+    maxAge: 60 * 60, // 1 hour in seconds (not 2 minutes)
   },
   jwt: {
     // Enforce max age on JWT token directly
-    maxAge: 1 * 60, // 1 hour in seconds
+    maxAge: 60 * 60, // 1 hour in seconds
   },
   cookies: {
     // Configure secure cookies in production

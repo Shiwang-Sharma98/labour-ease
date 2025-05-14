@@ -55,6 +55,7 @@ export const config = {
     '/register',
     '/employee-dashboard/:path*',
     '/shopkeeper-dashboard/:path*',
-    '/dashboard'
+    '/dashboard',
+    '/transition'
   ]
 };
