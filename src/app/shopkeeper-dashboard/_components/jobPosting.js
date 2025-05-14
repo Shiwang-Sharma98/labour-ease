@@ -182,7 +182,7 @@ export default function JobPosting() {
                       placeholder={step.placeholder}
                       value={form.title}
                       onChange={e => updateField('title', e.target.value)}
-                      className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary bg-input text-input"
+                      className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary bg-input "
                     />
                   )}
                   {step.type === 'textarea' && (
@@ -191,7 +191,7 @@ export default function JobPosting() {
                       placeholder={step.placeholder}
                       value={form.description}
                       onChange={e => updateField('description', e.target.value)}
-                      className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary resize-none bg-input text-input"
+                      className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary resize-none bg-input "
                     />
                   )}
                   {step.type === 'skills' && (
@@ -201,7 +201,7 @@ export default function JobPosting() {
                         placeholder={step.placeholder}
                         value={form.search}
                         onChange={e => { updateField('search', e.target.value); setDropdownOpen(true); }}
-                        className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary bg-input text-input"
+                        className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary bg-input "
                       />
                       {dropdownOpen && (
                         <motion.div

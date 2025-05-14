@@ -40,14 +40,14 @@ const ShopkeeperSidebar = () => {
       path: '/shopkeeper-dashboard/profile',
       icon: <User size={20} />
     },
-    {
-      name: 'Job Postings',
-      path: '/shopkeeper-dashboard/jobPostings',
-      icon: <FileText size={20} />
-    },
+    // {
+    //   name: 'Job Postings',
+    //   path: '/shopkeeper-dashboard/jobPostings',
+    //   icon: <FileText size={20} />
+    // },
     {
       name: 'Post New Job',
-      path: '/shopkeeper-dashboard/job-openings',
+      path: '/shopkeeper-dashboard/jobPostings',
       icon: <FileText size={20} />
     },
     {
@@ -70,10 +70,13 @@ const ShopkeeperSidebar = () => {
     <div className="flex relative">
       <div className={`h-screen bg-card border-r border-border/20 flex flex-col fixed z-40 transition-all duration-300 ease-in-out ${collapsed ? 'w-[70px]' : 'w-[250px]'}`}>
         <div className="h-[60px] flex items-center justify-between px-4 border-b border-border/20">
-          <div className="flex items-center gap-3 text-primary font-bold text-xl">
+          <Link 
+            href="/shopkeeper-dashboard" 
+            className="flex items-center gap-3 text-primary font-bold text-xl no-underline"
+          >
             <Store size={24} />
             {!collapsed && <span>Shopkeeper</span>}
-          </div>
+          </Link>
           <button 
             className="bg-transparent border-none text-foreground cursor-pointer p-2 rounded transition-colors hover:bg-accent/50"
             onClick={toggleSidebar}
