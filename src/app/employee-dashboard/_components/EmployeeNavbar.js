@@ -2,29 +2,23 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Home, Briefcase, Heart, Bell, Edit, LogOut } from 'lucide-react';
+import { Home, Bell, Edit, LogOut } from 'lucide-react';
 import Link from 'next/link';
+import { signOut } from 'next-auth/react';
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
 
   const handleLogout = async () => {
-  try {
-    const res = await fetch('/api/logout', { method: 'POST' });
-
-    if (res.ok) {
-      // Clear any local authentication data (if applicable)
-      localStorage.removeItem('auth-token');
-      router.push('/');
-    } else {
-      console.error('Logout failed');
+    try {
+      await signOut({ callbackUrl: '/' });
+      // No need to manually clear localStorage or redirect,
+      // signOut does that for you with the callbackUrl
+    } catch (err) {
+      console.error('Logout error:', err);
     }
-  } catch (err) {
-    console.error('Logout error:', err);
-  }
-};
-
+  };
 
   return (
     <div
@@ -48,12 +42,19 @@ const Sidebar = () => {
           <Home className="w-5 h-5" />
           <span className={`ml-3 ${isOpen ? 'block' : 'hidden'} sm:block`}>Overview</span>
         </Link>
-        
-        <Link href="/employee-dashboard/employee-apply" className="flex items-center p-4 hover:bg-muted rounded-md">
+
+        <Link
+          href="/employee-dashboard/employee-apply"
+          className="flex items-center p-4 hover:bg-muted rounded-md"
+        >
           <Bell className="w-5 h-5" />
           <span className={`ml-3 ${isOpen ? 'block' : 'hidden'} sm:block`}>Job Alerts</span>
         </Link>
-        <Link href="/employee-dashboard/employee-profile" className="flex items-center p-4 hover:bg-muted rounded-md">
+
+        <Link
+          href="/employee-dashboard/employee-profile"
+          className="flex items-center p-4 hover:bg-muted rounded-md"
+        >
           <Edit className="w-5 h-5" />
           <span className={`ml-3 ${isOpen ? 'block' : 'hidden'} sm:block`}>Edit Profile</span>
         </Link>

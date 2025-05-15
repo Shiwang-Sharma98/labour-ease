@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import ThemeToggle from '../../components/ThemeToggle';
 import { useRouter } from 'next/navigation';
@@ -13,8 +13,24 @@ const getInitials = (name) => {
 export default function DashboardHeader() {
   const { data: session } = useSession();
   const router = useRouter();
+  const [username, setUsername] = useState('');
 
-  const name = session?.user?.name || '';
+  useEffect(() => {
+    const fetchUsername = async () => {
+      try {
+        const res = await fetch('/api/username');
+        if (!res.ok) throw new Error('Failed to fetch username');
+        const data = await res.json();
+        setUsername(data.username);
+      } catch (error) {
+        console.error('Error fetching username:', error);
+      }
+    };
+
+    if (session) {
+      fetchUsername();
+    }
+  }, [session]);
 
   return (
     <div className="w-full flex justify-between items-center px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
@@ -27,7 +43,7 @@ export default function DashboardHeader() {
           className="w-9 h-9 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center hover:bg-indigo-700"
           aria-label="Go to profile"
         >
-          {getInitials(name)}
+          {getInitials(username)}
         </button>
       </div>
     </div>

@@ -7,7 +7,27 @@ import { useSession } from 'next-auth/react';
 
 const Dashboard = () => {
   const { data: session } = useSession();
-  const name = session?.user?.name || 'User';
+  const [name, setName] = useState('User');
+
+useEffect(() => {
+  if (!session) return;
+
+  async function fetchUserInfo() {
+    try {
+      const res = await fetch('/api/username');
+      const data = await res.json();
+      if (data?.username) {
+        setName(data.username);
+      }
+    } catch (err) {
+      console.error("Failed to fetch user info:", err);
+    }
+  }
+
+  fetchUserInfo();
+}, [session]);
+
+
 
 
   const [jobAlertCount, setJobAlertCount] = useState(0);
